@@ -2,7 +2,7 @@
 
 julia_version = "1.9.3"
 manifest_format = "2.0"
-project_hash = "5d9ddde4dda76c3c7993007a6bd05c5318727d8d"
+project_hash = "ebdb8d063990447da74c8dcf578bae627f013f0a"
 
 [[deps.Accessors]]
 deps = ["CompositionsBase", "ConstructionBase", "Dates", "InverseFunctions", "LinearAlgebra", "MacroTools", "Test"]
@@ -328,6 +328,12 @@ repo-rev = "blocktensor"
 repo-url = "https://github.com/maartenvd/MPSKit.jl.git"
 uuid = "bb1c41ca-d63c-52ed-829e-0820dda26502"
 version = "0.10.0"
+
+[[deps.MPSKitModels]]
+deps = ["LinearAlgebra", "MPSKit", "MacroTools", "PrecompileTools", "TensorKit", "TensorOperations", "TupleTools"]
+git-tree-sha1 = "902cc06f69d3b64833cd87b3cc90d44651ff37ab"
+uuid = "ca635005-6f8c-4cd1-b51d-8491250ef2ab"
+version = "0.3.0"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
