@@ -20,7 +20,7 @@ data[1, 1, 1] = one(T) # regular numbers are interpreted as identity operators
 data[1, 1, 2] = -Z
 data[1, 2, 3] = Z
 data[1, 1, 3] = 3 * X
-H_Ising = MPOHamiltonian(data)
+H_Ising = MPOHamiltonian(data);
 
 
 # Ising Hamiltonian mpo
@@ -39,4 +39,4 @@ data[1, 1, 3] = hX
 data[1, 2, 3] = Z
 data[1, 3, 3] = identity(ℂ^2)
 
-H_Ising = MPOHamiltonian(data)
+H_Ising = MPOHamiltonian(data);
