@@ -1,19 +1,44 @@
-using BlockTensorKit, MPSKit, TensorKit
+using BlockTensorKit, MPSKit, TensorKit, MPSKitModels
 include("../src/parametrisedtensormap.jl")
 
-function coeff(t)
-    return t<1 ? t : 1 
-end
+# Sinusoidal coefficient
+coeff(t) = sin(t*2π)
+sinSx = ParametrisedTensorMap(S_x(), coeff)
 
-sz = [ 1 0
-      0 -1]
+# Jordan block mpo form
+# 1 C D
+# 0 A B
+# 0 0 1
 
-sz = TensorMap(matrix, ℝ^2, ℝ^2)
+T = ComplexF64
+X = TensorMap(T[0 1; 1 0], ℂ^2 ← ℂ^2)
+Z = TensorMap(T[1 0; 0 -1], ℂ^2 ← ℂ^2)
 
-PTM = ParametrisedTensorMap(t, coeff)
+data = Array{Any,3}(missing, 1, 3, 3)
+data[1, 1, 1] = identity(ℂ^2)
+data[1, 1, 1] = one(T) # regular numbers are interpreted as identity operators
+data[1, 1, 2] = -Z
+data[1, 2, 3] = Z
+data[1, 1, 3] = 3 * X
+H_Ising = MPOHamiltonian(data);
 
-MPOHamiltonian(PTM)
 
-function MPSKit.MPOHamiltonian(PTM::ParametrisedTensorMap)
-    return MPO(PTM.tensor)
-end
+# Ising Hamiltonian mpo
+# 1 -Z h(t)X
+# 0  0  Z
+# 0  0  1
+
+
+T = ComplexF64
+Z = TensorMap(T[1 0; 0 -1], ℂ^2 ← ℂ^2)
+hX = sinSx
+
+data = Array{Any,3}(missing, 1, 3, 3)
+
+data[1, 1, 1] = one(T) # regular numbers are interpreted as identity operators
+data[1, 1, 2] = -Z
+data[1, 2, 3] = Z
+data[1, 1, 3] = sinSx
+data[1, 3, 3] = one(T)
+
+H_Ising = MPOHamiltonian(data);

@@ -15,3 +15,8 @@ TensorKit.codomain(t::ParametrisedTensorMap) = codomain(t.tensor)
 function (PTM::ParametrisedTensorMap)(t::Number)
     return PTM.coeff(t) * PTM.tensor
 end
+
+TensorKit.storagetype(::Type{<:ParametrisedTensorMap{S,N1,N2,T}}) where {S,N1,N2,T} = TensorKit.storagetype(T)
+
+TensorKit.block(t::Type{<:ParametrisedTensorMap{S,N1,N2,T}}, triv::Trivial) where {S,N1,N2,T} = TensorKit.block(t.tensor.data, triv)
+
