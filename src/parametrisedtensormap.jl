@@ -18,5 +18,6 @@ end
 
 TensorKit.storagetype(::Type{<:ParametrisedTensorMap{S,N1,N2,T}}) where {S,N1,N2,T} = TensorKit.storagetype(T)
 
-TensorKit.block(t::Type{<:ParametrisedTensorMap{S,N1,N2,T}}, triv::Trivial) where {S,N1,N2,T} = TensorKit.block(t.tensor.data, triv)
+TensorKit.block(t::ParametrisedTensorMap{S,N1,N2,T}, ::Trivial) where {S,N1,N2,T} = t.tensor.data
+
 
