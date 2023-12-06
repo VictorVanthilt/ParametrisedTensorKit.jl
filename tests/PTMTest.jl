@@ -38,7 +38,7 @@ data = Array{Any,3}(missing, 1, 3, 3)
 data[1, 1, 1] = one(T) # regular numbers are interpreted as identity operators
 data[1, 1, 2] = -Z
 data[1, 2, 3] = Z
-data[1, 1, 3] = sinSx
+data[1, 1, 3] = hX
 data[1, 3, 3] = one(T)
 
 H_Ising = MPOHamiltonian(data);
