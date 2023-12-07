@@ -25,19 +25,21 @@ TensorKit.block(t::ParametrisedTensorMap{S,N1,N2,T,E}, ::Trivial) where {S,N1,N2
 function Base.:*(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
     newtens = t1.tensor * t2.tensor
     return ParametrisedTensorMap(newtens, combinecoeff(t1.coeff, t2.coeff))
-    # return mul!(similar(t1, promote_type(scalartype(t1), scalartype(t2)), codomain(t1) ← domain(t2)), t1.tensor, t2.tensor)
 end
 
 function Base.:*(t1::ParametrisedTensorMap, t2::AbstractTensorMap)
     newtens = t1.tensor * t2
     return ParametrisedTensorMap(newtens, combinecoeff(t1.coeff, one(promote_type(scalartype(t1), scalartype(t2)))))
-    # return mul!(similar(t1, promote_type(scalartype(t1), scalartype(t2)), codomain(t1) ← domain(t2)), t1.tensor, t2)
 end
 
 function Base.:*(t1::AbstractTensorMap, t2::ParametrisedTensorMap)
     newtens = t1 * t2.tensor
     return ParametrisedTensorMap(newtens, combinecoeff(one(promote_type(scalartype(t1), scalartype(t2))), t2.coeff))
-    # return mul!(similar(t1, promote_type(scalartype(t1), scalartype(t2)), codomain(t1) ← domain(t2)), t1, t2.tensor)
+end
+
+function Base.:^(t::ParametrisedTensorMap, n::Integer)
+    newtens = t.tensor^n
+    return ParametrisedTensorMap(newtens, exponentiatecoeff(t.coeff, n))
 end
 
 function combinecoeff(f1::Function, f2::Number)
@@ -54,6 +56,10 @@ end
 
 function combinecoeff(f1::Number, f2::Number)
     return f1 * f2
+end
+
+function exponentiatecoeff(f::Function, n::Integer)
+    return (t) -> f(t)^n
 end
 
 function MPSKit.ismpoidentity(::ParametrisedTensorMap)
