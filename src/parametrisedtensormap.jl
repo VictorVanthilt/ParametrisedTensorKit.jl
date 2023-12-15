@@ -13,8 +13,6 @@ TensorKit.domain(t::ParametrisedTensorMap) = domain(t.tensor)
 TensorKit.codomain(t::ParametrisedTensorMap) = codomain(t.tensor)
 
 function (PTM::ParametrisedTensorMap)(t::Number)
-    # return PTM.coeff(t) * PTM.tensor
-    # alternative:
     return ParametrisedTensorMap(PTM.tensor, PTM.coeff(t))
 end
 
@@ -22,24 +20,31 @@ TensorKit.storagetype(::Type{<:ParametrisedTensorMap{S,N1,N2,T}}) where {S,N1,N2
 
 TensorKit.block(t::ParametrisedTensorMap{S,N1,N2,T,E}, ::Trivial) where {S,N1,N2,T, E<:Number} = TensorKit.block(t.tensor, Trivial()) * t.coeff
 
+# Multiplication methods
 function Base.:*(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
     newtens = t1.tensor * t2.tensor
     return ParametrisedTensorMap(newtens, combinecoeff(t1.coeff, t2.coeff))
-    # return mul!(similar(t1, promote_type(scalartype(t1), scalartype(t2)), codomain(t1) ← domain(t2)), t1.tensor, t2.tensor)
 end
 
 function Base.:*(t1::ParametrisedTensorMap, t2::AbstractTensorMap)
     newtens = t1.tensor * t2
     return ParametrisedTensorMap(newtens, combinecoeff(t1.coeff, one(promote_type(scalartype(t1), scalartype(t2)))))
-    # return mul!(similar(t1, promote_type(scalartype(t1), scalartype(t2)), codomain(t1) ← domain(t2)), t1.tensor, t2)
 end
 
 function Base.:*(t1::AbstractTensorMap, t2::ParametrisedTensorMap)
     newtens = t1 * t2.tensor
     return ParametrisedTensorMap(newtens, combinecoeff(one(promote_type(scalartype(t1), scalartype(t2))), t2.coeff))
-    # return mul!(similar(t1, promote_type(scalartype(t1), scalartype(t2)), codomain(t1) ← domain(t2)), t1, t2.tensor)
 end
 
+function Base.:*(N::Number, t::ParametrisedTensorMap)
+    return ParametrisedTensorMap(t.tensor, combinecoeff(N, t.coeff))
+end
+
+function Base.:*(t::ParametrisedTensorMap, N::Number)
+    return ParametrisedTensorMap(t.tensor, combinecoeff(t.coeff, N))
+end
+
+# Combining coefficients with eachother
 function combinecoeff(f1::Function, f2::Number)
     return (t) -> f1(t) * f2
 end
@@ -77,3 +82,5 @@ function (H::MPOHamiltonian{T})(t) where {S,T<:BlockTensorMap{S,2,2,<:Union{MPSK
         return newx
     end)
 end
+
+TensorKit.has_shared_permute(t::ParametrisedTensorMap, args...) = false
