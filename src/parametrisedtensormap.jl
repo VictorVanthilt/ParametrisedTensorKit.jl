@@ -65,10 +65,6 @@ function combinecoeff(f1::Number, f2::Number)
     return f1 * f2
 end
 
-function adjoint(f::Function)
-    return (t) -> conj(f(t))
-end
-
 function MPSKit.ismpoidentity(::ParametrisedTensorMap)
     return false
 end
