@@ -9,6 +9,10 @@ function ParametrisedTensorMap(tensor::T, coeff::E) where {S,N1,N2,T<:AbstractTe
     return ParametrisedTensorMap{S,N1,N2,T,E}(tensor, coeff)
 end
 
+function ParametrisedTensorMap(tensor::T) where {T<:AbstractTensorMap}
+    return ParametrisedTensorMap(tensor, 1)
+end
+
 TensorKit.domain(t::ParametrisedTensorMap) = domain(t.tensor)
 TensorKit.codomain(t::ParametrisedTensorMap) = codomain(t.tensor)
 
@@ -61,6 +65,10 @@ function combinecoeff(f1::Number, f2::Number)
     return f1 * f2
 end
 
+function adjoint(f::Function)
+    return (t) -> conj(f(t))
+end
+
 function MPSKit.ismpoidentity(::ParametrisedTensorMap)
     return false
 end
@@ -84,3 +92,19 @@ function (H::MPOHamiltonian{T})(t) where {S,T<:BlockTensorMap{S,2,2,<:Union{MPSK
 end
 
 TensorKit.has_shared_permute(t::ParametrisedTensorMap, args...) = false
+
+function TensorKit.similar(t::ParametrisedTensorMap, T::Type, P::TensorMapSpace)
+    tens = similar(t.tensor, T, P)
+    return ParametrisedTensorMap(tens)
+end
+
+function adjoint(PTM::ParametrisedTensorMap)
+    return ParametrisedTensorMap(TensorKit.adjoint(PTM.tensor), adjoint(PTM.coeff))
+end
+
+# function Base.getindex(b::ParametrisedTensorMap{S,N1,N2,T<:AbstractTensorMap{S,N1,N2},E}) where {S,N1,N2,T<:AbstractTensorMap{S,N1,N2},E}
+#     sectortype(S) == Trivial || throw(SectorMismatch())
+#     (V1, V2) = domain(b)
+#     d = (dim(V2), dim(V1), dim(V1), dim(V2))
+#     return sreshape(StridedView(block(b, Trivial())), d)
+# end
