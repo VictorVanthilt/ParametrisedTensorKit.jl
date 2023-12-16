@@ -72,7 +72,6 @@ end
 function eval_coeff(t::ParametrisedTensorMap, tval)
     return t(tval)
 end
-eval_coeff(t::Any, tval) = t
 
 function (H::MPOHamiltonian{T})(t) where {S,T<:BlockTensorMap{S,2,2,<:Union{MPSKit.MPOTensor, ParametrisedTensorMap, TensorKit.BraidingTensor}}}
     return MPOHamiltonian(map(H.data) do x
