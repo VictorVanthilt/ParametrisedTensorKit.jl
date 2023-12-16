@@ -28,4 +28,8 @@ H_Ising = MPOHamiltonian(data)
 
 O_Ising = make_time_mpo(H_ising, dt, TaylorCluster)
 
-timestep
+ψ = FiniteMPS(rand, ComplexF64, 1, ℂ^2, ℂ^2)
+
+ψ = timestep(ψ, H_Ising, 0.1, TDVP())
+
+getindex()

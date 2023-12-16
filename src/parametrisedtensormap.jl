@@ -97,10 +97,3 @@ end
 function adjoint(PTM::ParametrisedTensorMap)
     return ParametrisedTensorMap(TensorKit.adjoint(PTM.tensor), adjoint(PTM.coeff))
 end
-
-# function Base.getindex(b::ParametrisedTensorMap{S,N1,N2,T<:AbstractTensorMap{S,N1,N2},E}) where {S,N1,N2,T<:AbstractTensorMap{S,N1,N2},E}
-#     sectortype(S) == Trivial || throw(SectorMismatch())
-#     (V1, V2) = domain(b)
-#     d = (dim(V2), dim(V1), dim(V1), dim(V2))
-#     return sreshape(StridedView(block(b, Trivial())), d)
-# end
