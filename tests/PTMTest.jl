@@ -26,10 +26,11 @@ data[1, 3, 3] = one(T);
 
 H_Ising = MPOHamiltonian(data)
 
-O_Ising = make_time_mpo(H_ising, dt, TaylorCluster)
+O_Ising = make_time_mpo(H_Ising, dt, TaylorCluster) #TODO
 
-ψ = FiniteMPS(rand, ComplexF64, 1, ℂ^2, ℂ^2)
+ψ₀ = FiniteMPS(rand, ComplexF64, 1, ℂ^2, ℂ^2)
 
-ψ = timestep(ψ, H_Ising, 0.1, TDVP())
+ψ₁, _ = timestep(ψ₀, H_Ising, .01, TDVP())
 
-getindex()
+ψ₂, _ = timestep(ψ₀, H_Ising, .01, TDVP2())
+
