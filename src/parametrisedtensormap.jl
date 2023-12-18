@@ -1,4 +1,6 @@
-using MPSKit, TensorKit
+using MPSKit, TensorKit, TensorOperations
+const TO = TensorOperations
+import TensorOperations.tensorcontract!
 
 struct ParametrisedTensorMap{S,N1,N2,T<:AbstractTensorMap{S,N1,N2},E} <: AbstractTensorMap{S,N1,N2}
     tensor::T
@@ -95,4 +97,41 @@ end
 
 function adjoint(PTM::ParametrisedTensorMap)
     return ParametrisedTensorMap(TensorKit.adjoint(PTM.tensor), adjoint(PTM.coeff))
+end
+
+function convert(::Type{ParametrisedTensorMap}, t::AbstractTensorMap)
+    return ParametrisedTensorMap(t)
+end
+
+# tensorcontract
+function tensorcontract!(C::AbstractTensorMap{S,N₁,N₂}, pAB,
+                                          A::ParametrisedTensorMap, pA, conjA::Symbol,
+                                          B::AbstractTensorMap{S}, pB, conjB::Symbol,
+                                          α::Number, β::Number) where {S,N₁,N₂}
+    newalpha = combinecoeff(α, A.coeff)
+    return tensorcontract!(C, pAB, A.tensor, pA, conjA, B, pB, conjB, newalpha, β)
+end
+
+function tensorcontract!(C::AbstractTensorMap{S,N₁,N₂}, pAB::Index2Tuple,
+                                          A::AbstractTensorMap{S}, pA::Index2Tuple, conjA::Symbol,
+                                          B::ParametrisedTensorMap, pB::Index2Tuple, conjB::Symbol,
+                                          α::Number, β::Number) where {S,N₁,N₂}
+    newalpha = combinecoeff(α, B.coeff)
+    return tensorcontract!(C, pAB, A, pA, conjA, B.tensor, pB, conjB, newalpha, β)
+end
+
+function tensorcontract!(C::AbstractTensorMap{S,N₁,N₂}, pAB::Index2Tuple,
+                                          A::ParametrisedTensorMap, pA::Index2Tuple, conjA::Symbol,
+                                          B::ParametrisedTensorMap, pB::Index2Tuple, conjB::Symbol,
+                                          α::Number, β::Number) where {S,N₁,N₂}
+    newalpha = combinecoeff(α, combinecoeff(A.coeff, B.coeff))
+    return tensorcontract!(C, pAB, A.tensor, pA, conjA, B.tensor, pB, conjB, newalpha, β)
+end
+
+function tensorcontract!(C::AbstractTensorMap{S,N₁,N₂}, pAB::Index2Tuple,
+                         A::AbstractTensorMap{S}, pA::Index2Tuple, conjA::Symbol,
+                         B::AbstractTensorMap{S}, pB::Index2Tuple, conjB::Symbol,
+                         α::Function, β::Number) where {S,N₁,N₂}
+    A = ParametrisedTensorMap(A, α)
+    return tensorcontract!(C, pAB, A.tensor, pA, conjA, B, pB, conjB, 1, β)
 end
