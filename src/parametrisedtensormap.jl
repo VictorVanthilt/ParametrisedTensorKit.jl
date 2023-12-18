@@ -103,7 +103,9 @@ function convert(::Type{ParametrisedTensorMap}, t::AbstractTensorMap)
     return ParametrisedTensorMap(t)
 end
 
-# tensorcontract
+# ======================
+# tensorcontract methods
+# ======================
 function tensorcontract!(C::AbstractTensorMap{S,N₁,N₂}, pAB,
                                           A::ParametrisedTensorMap, pA, conjA::Symbol,
                                           B::AbstractTensorMap{S}, pB, conjB::Symbol,
@@ -128,6 +130,7 @@ function tensorcontract!(C::AbstractTensorMap{S,N₁,N₂}, pAB::Index2Tuple,
     return tensorcontract!(C, pAB, A.tensor, pA, conjA, B.tensor, pB, conjB, newalpha, β)
 end
 
+# promote one of the AbstractTensorMaps to a ParametrisedTensorMap and add the coeff
 function tensorcontract!(C::AbstractTensorMap{S,N₁,N₂}, pAB::Index2Tuple,
                          A::AbstractTensorMap{S}, pA::Index2Tuple, conjA::Symbol,
                          B::AbstractTensorMap{S}, pB::Index2Tuple, conjB::Symbol,
