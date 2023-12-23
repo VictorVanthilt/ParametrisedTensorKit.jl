@@ -7,6 +7,8 @@ struct ParametrisedTensorMap{S,N1,N2,T<:AbstractTensorMap{S,N1,N2},E} <: Abstrac
     coeff::E
 end
 
+const PTM = ParametrisedTensorMap
+
 function ParametrisedTensorMap(tensor::T, coeff::E) where {S,N1,N2,T<:AbstractTensorMap{S,N1,N2},E}
     return ParametrisedTensorMap{S,N1,N2,T,E}(tensor, coeff)
 end
@@ -18,8 +20,8 @@ end
 TensorKit.domain(t::ParametrisedTensorMap) = domain(t.tensor)
 TensorKit.codomain(t::ParametrisedTensorMap) = codomain(t.tensor)
 
-function (PTM::ParametrisedTensorMap)(t::Number)
-    return ParametrisedTensorMap(PTM.tensor, PTM.coeff(t))
+function (T::ParametrisedTensorMap)(t::Number)
+    return ParametrisedTensorMap(T.tensor, T.coeff(t))
 end
 
 TensorKit.storagetype(::Type{<:ParametrisedTensorMap{S,N1,N2,T}}) where {S,N1,N2,T} = TensorKit.storagetype(T)
@@ -77,7 +79,7 @@ end
 
 function (H::MPOHamiltonian{T})(t) where {S,T<:BlockTensorMap{S,2,2,<:Union{MPSKit.MPOTensor, ParametrisedTensorMap, TensorKit.BraidingTensor}}}
     return MPOHamiltonian(map(H.data) do x
-        new_subtensors = Dict(I => old_subtensor isa ParametrisedTensorMap ? eval_coeff(old_subtensor, t) : old_subtensor for (I, old_subtensor) in nonzero_pairs(x))
+        new_subtensors = Dict(I => old_subtensor isa PTM ? eval_coeff(old_subtensor, t) : old_subtensor for (I, old_subtensor) in nonzero_pairs(x))
         new_tensortype = Union{(typeof.(values(new_subtensors)))...}
 
         newx = BlockTensorMap{S,2,2,new_tensortype}(undef, x.codom, x.dom)
@@ -95,8 +97,8 @@ function TensorKit.similar(t::ParametrisedTensorMap, T::Type, P::TensorMapSpace)
     return ParametrisedTensorMap(tens)
 end
 
-function adjoint(PTM::ParametrisedTensorMap)
-    return ParametrisedTensorMap(TensorKit.adjoint(PTM.tensor), adjoint(PTM.coeff))
+function adjoint(t::ParametrisedTensorMap)
+    return ParametrisedTensorMap(TensorKit.adjoint(t.tensor), adjoint(t.coeff))
 end
 
 function convert(::Type{ParametrisedTensorMap}, t::AbstractTensorMap)
