@@ -30,7 +30,7 @@ O_Ising = make_time_mpo(H_Ising, dt, TaylorCluster) #TODO
 
 ψ₀ = FiniteMPS(rand, ComplexF64, 1, ℂ^2, ℂ^2)
 
-ψ₁, _ = timestep(ψ₀, H_Ising, .01, TDVP())
+ψ₁, _ = timestep(ψ₀, H_Ising, 1, .01, TDVP())
 
-ψ₂, _ = timestep(ψ₀, H_Ising, .01, TDVP2())
+ψ₂, _ = timestep(ψ₀, H_Ising, 1, .01, TDVP2())
 
