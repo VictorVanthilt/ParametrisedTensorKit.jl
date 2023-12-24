@@ -178,7 +178,7 @@ end
 # ============================
 
 struct SumOfTensorMaps
-    operators::Array{ParametrisedTensorMap}
+    operators::Array{T} where {T<:AbstractTensorMap}
 end
 
 function SumOfTensorMaps(ops...)
@@ -186,7 +186,13 @@ function SumOfTensorMaps(ops...)
 end
 
 function (sotm::SumOfTensorMaps)(t)
-    evaluated = map(sotm.operators) do x return x(t).coeff * x(t).tensor end
+    evaluated = map(sotm.operators) do x
+        if x isa ParametrisedTensorMap
+            return x(t).coeff * x(t).tensor
+        else
+            return x
+        end
+    end
     return sum(evaluated)
 end
 
@@ -198,3 +204,9 @@ end
 Base.:+(t::ParametrisedTensorMap, sotm::SumOfTensorMaps) = SumOfTensorMaps(vcat(t, sotm.operators))
 
 Base.:+(sotm::SumOfTensorMaps, t::ParametrisedTensorMap) = SumOfTensorMaps(vcat(t, sotm.operators))
+
+Base.:+(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap) = SumOfTensorMaps(t1, t2)
+
+Base.:+(t1::ParametrisedTensorMap, t2::AbstractTensorMap) = SumOfTensorMaps(t1, t2)
+
+Base.:+(t1::AbstractTensorMap, t2::ParametrisedTensorMap) = SumOfTensorMaps(t1, t2)
