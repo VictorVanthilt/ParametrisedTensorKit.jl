@@ -75,6 +75,10 @@ function Base.:*(t::ParametrisedTensorMap, N::Number)
     return ParametrisedTensorMap(t.tensor, combinecoeff(t.coeff, N))
 end
 
+function Base.:^(t::ParametrisedTensorMap, n::Integer)
+    return ParametrisedTensorMap(t.tensor^n, t -> t.coeff(t)^n)
+end
+
 # Addition methods
 function Base.:+(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
     return SumOfTensorMaps(t1, t2)
