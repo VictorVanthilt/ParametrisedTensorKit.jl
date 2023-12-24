@@ -185,16 +185,16 @@ function SumOfTensorMaps(ops...)
     return SumOfTensorMaps(collect(ops))
 end
 
-function (soptm::SumOfTensorMaps)(t)
-    evaluated = map(soptm.operators) do x return x(t).coeff * x(t).tensor end
+function (sotm::SumOfTensorMaps)(t)
+    evaluated = map(sotm.operators) do x return x(t).coeff * x(t).tensor end
     return sum(evaluated)
 end
 
 # Adding methods
-function Base.:+(soptm1::SumOfTensorMaps, soptm2::SumOfTensorMaps)
-    return SumOfTensorMaps(vcat(soptm1.operators, soptm2.operators))
+function Base.:+(sotm1::SumOfTensorMaps, sotm2::SumOfTensorMaps)
+    return SumOfTensorMaps(vcat(sotm1.operators, sotm2.operators))
 end
 
-Base.:+(t::ParametrisedTensorMap, soptm::SumOfTensorMaps) = SumOfTensorMaps(vcat(t, soptm.operators))
+Base.:+(t::ParametrisedTensorMap, sotm::SumOfTensorMaps) = SumOfTensorMaps(vcat(t, sotm.operators))
 
-Base.:+(soptm::SumOfTensorMaps, t::ParametrisedTensorMap) = SumOfTensorMaps(vcat(t, soptm.operators))
+Base.:+(sotm::SumOfTensorMaps, t::ParametrisedTensorMap) = SumOfTensorMaps(vcat(t, sotm.operators))
