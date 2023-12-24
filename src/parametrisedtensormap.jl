@@ -28,6 +28,29 @@ TensorKit.storagetype(::Type{<:ParametrisedTensorMap{S,N1,N2,T}}) where {S,N1,N2
 
 TensorKit.block(t::ParametrisedTensorMap{S,N1,N2,T,E}, ::Trivial) where {S,N1,N2,T, E<:Number} = TensorKit.block(t.tensor, Trivial()) * t.coeff
 
+# Representation (Very basic, come up with better one)
+function Base.show(io::IO, t::ParametrisedTensorMap{S,N1,N2,T}) where {S,N1,N2,T}
+    
+    function myPad(s::String, n::Integer)
+        strings = split(s, "\n")
+        newstrings = []
+        for (i, string) in enumerate(strings)
+            L = length(string)
+            if i > 1
+                string = lpad(string, L + n, " ")
+            end
+            string *= "\n"
+            append!(newstrings, string)
+        end
+        newstring = join(newstrings)
+        return newstring
+    end
+
+    println(io, "ParametrisedTensorMap")
+    println(io, "Coeff: ", t.coeff)
+    print(io, "Tensor: " * myPad(repr(t.tensor), 7))
+end
+
 # Multiplication methods
 function Base.:*(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
     newtens = t1.tensor * t2.tensor
@@ -50,6 +73,11 @@ end
 
 function Base.:*(t::ParametrisedTensorMap, N::Number)
     return ParametrisedTensorMap(t.tensor, combinecoeff(t.coeff, N))
+end
+
+# Addition methods
+function Base.:+(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
+    return SumOfParametrisedTensorMaps(t1, t2)
 end
 
 # Combining coefficients with eachother
@@ -140,3 +168,30 @@ function tensorcontract!(C::AbstractTensorMap{S,N₁,N₂}, pAB::Index2Tuple,
     A = ParametrisedTensorMap(A, α)
     return tensorcontract!(C, pAB, A.tensor, pA, conjA, B, pB, conjB, 1, β)
 end
+
+# ============================
+# Sum of parametrisedTensorMap
+# ============================
+
+struct SumOfParametrisedTensorMaps
+    operators::Array{ParametrisedTensorMap}
+end
+
+function SumOfParametrisedTensorMaps(ops...)
+    return SumOfParametrisedTensorMaps(collect(ops))
+end
+
+
+function (soptm::SumOfParametrisedTensorMaps)(t)
+    evaluated = map(soptm.operators) do x return x(t).coeff * x(t).tensor end
+    return sum(evaluated)
+end
+
+# Adding methods
+function Base.:+(soptm1::SumOfParametrisedTensorMaps, soptm2::SumOfParametrisedTensorMaps)
+    return SumOfParametrisedTensorMaps(vcat(soptm1.operators, soptm2.operators))
+end
+
+Base.:+(t::ParametrisedTensorMap, soptm::SumOfParametrisedTensorMaps) = SumOfParametrisedTensorMaps(vcat(t, soptm.operators))
+
+Base.:+(soptm::SumOfParametrisedTensorMaps, t::ParametrisedTensorMap) = SumOfParametrisedTensorMaps(vcat(t, soptm.operators))
