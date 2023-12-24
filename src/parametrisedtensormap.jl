@@ -77,7 +77,7 @@ end
 
 # Addition methods
 function Base.:+(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
-    return SumOfParametrisedTensorMaps(t1, t2)
+    return SumOfTensorMaps(t1, t2)
 end
 
 # Combining coefficients with eachother
@@ -173,25 +173,24 @@ end
 # Sum of parametrisedTensorMap
 # ============================
 
-struct SumOfParametrisedTensorMaps
+struct SumOfTensorMaps
     operators::Array{ParametrisedTensorMap}
 end
 
-function SumOfParametrisedTensorMaps(ops...)
-    return SumOfParametrisedTensorMaps(collect(ops))
+function SumOfTensorMaps(ops...)
+    return SumOfTensorMaps(collect(ops))
 end
 
-
-function (soptm::SumOfParametrisedTensorMaps)(t)
+function (soptm::SumOfTensorMaps)(t)
     evaluated = map(soptm.operators) do x return x(t).coeff * x(t).tensor end
     return sum(evaluated)
 end
 
 # Adding methods
-function Base.:+(soptm1::SumOfParametrisedTensorMaps, soptm2::SumOfParametrisedTensorMaps)
-    return SumOfParametrisedTensorMaps(vcat(soptm1.operators, soptm2.operators))
+function Base.:+(soptm1::SumOfTensorMaps, soptm2::SumOfTensorMaps)
+    return SumOfTensorMaps(vcat(soptm1.operators, soptm2.operators))
 end
 
-Base.:+(t::ParametrisedTensorMap, soptm::SumOfParametrisedTensorMaps) = SumOfParametrisedTensorMaps(vcat(t, soptm.operators))
+Base.:+(t::ParametrisedTensorMap, soptm::SumOfTensorMaps) = SumOfTensorMaps(vcat(t, soptm.operators))
 
-Base.:+(soptm::SumOfParametrisedTensorMaps, t::ParametrisedTensorMap) = SumOfParametrisedTensorMaps(vcat(t, soptm.operators))
+Base.:+(soptm::SumOfTensorMaps, t::ParametrisedTensorMap) = SumOfTensorMaps(vcat(t, soptm.operators))
