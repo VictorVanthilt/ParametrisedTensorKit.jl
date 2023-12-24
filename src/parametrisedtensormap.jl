@@ -81,7 +81,7 @@ end
 
 # Addition methods
 function Base.:+(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
-    return SumOfTensorMaps(t1, t2)
+    return SumOfTensors(t1, t2)
 end
 
 # Combining coefficients with eachother
@@ -177,16 +177,16 @@ end
 # Sum of parametrisedTensorMap
 # ============================
 
-struct SumOfTensorMaps
+struct SumOfTensors
     operators::Array{T} where {T<:AbstractTensorMap}
 end
 
-function SumOfTensorMaps(ops...)
-    return SumOfTensorMaps(collect(ops))
+function SumOfTensors(ops...)
+    return SumOfTensors(collect(ops))
 end
 
-function (sotm::SumOfTensorMaps)(t)
-    evaluated = map(sotm.operators) do x
+function (sot::SumOfTensors)(t)
+    evaluated = map(sot.operators) do x
         if x isa ParametrisedTensorMap
             return x(t).coeff * x(t).tensor
         else
@@ -197,16 +197,16 @@ function (sotm::SumOfTensorMaps)(t)
 end
 
 # Adding methods
-function Base.:+(sotm1::SumOfTensorMaps, sotm2::SumOfTensorMaps)
-    return SumOfTensorMaps(vcat(sotm1.operators, sotm2.operators))
+function Base.:+(sot1::SumOfTensors, sot2::SumOfTensors)
+    return SumOfTensors(vcat(sot1.operators, sot2.operators))
 end
 
-Base.:+(t::ParametrisedTensorMap, sotm::SumOfTensorMaps) = SumOfTensorMaps(vcat(t, sotm.operators))
+Base.:+(t::ParametrisedTensorMap, sot::SumOfTensors) = SumOfTensors(vcat(t, sot.operators))
 
-Base.:+(sotm::SumOfTensorMaps, t::ParametrisedTensorMap) = SumOfTensorMaps(vcat(t, sotm.operators))
+Base.:+(sot::SumOfTensors, t::ParametrisedTensorMap) = SumOfTensors(vcat(t, sot.operators))
 
-Base.:+(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap) = SumOfTensorMaps(t1, t2)
+Base.:+(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap) = SumOfTensors(t1, t2)
 
-Base.:+(t1::ParametrisedTensorMap, t2::AbstractTensorMap) = SumOfTensorMaps(t1, t2)
+Base.:+(t1::ParametrisedTensorMap, t2::AbstractTensorMap) = SumOfTensors(t1, t2)
 
-Base.:+(t1::AbstractTensorMap, t2::ParametrisedTensorMap) = SumOfTensorMaps(t1, t2)
+Base.:+(t1::AbstractTensorMap, t2::ParametrisedTensorMap) = SumOfTensors(t1, t2)
