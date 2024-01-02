@@ -177,12 +177,21 @@ end
 # Sum of parametrisedTensorMap
 # ============================
 
-struct SumOfTensors{T <: AbstractTensorMap} <: AbstractTensorMap
-    tensors::Array{T}
+struct SumOfTensors{S,N1,N2,T<:AbstractTensorMap{S,N1,N2}} <: AbstractTensorMap{S,N1,N2}
+    tensors::Vector{T}
 end
 
 function SumOfTensors(ops...)
     return SumOfTensors(collect(ops))
+end
+
+TensorKit.domain(t::SumOfTensors) = domain(t.tensors[1])
+TensorKit.codomain(t::SumOfTensors) = codomain(t.tensors[1])
+
+function TensorKit.storagetype(t::SumOfTensors)
+    println("here!")
+    @show TensorKit.storagetype(t.tensors[1])
+    return TensorKit.storagetype(t.tensors[1])
 end
 
 function (sot::SumOfTensors)(t)
