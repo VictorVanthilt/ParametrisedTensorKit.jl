@@ -188,11 +188,7 @@ end
 TensorKit.domain(t::SumOfTensors) = domain(t.tensors[1])
 TensorKit.codomain(t::SumOfTensors) = codomain(t.tensors[1])
 
-function TensorKit.storagetype(t::SumOfTensors)
-    println("here!")
-    @show TensorKit.storagetype(t.tensors[1])
-    return TensorKit.storagetype(t.tensors[1])
-end
+TensorKit.storagetype(::Type{<:SumOfTensors{S,N1,N2,T}}) where {S,N1,N2,T} = return TensorKit.storagetype(T)
 
 function (sot::SumOfTensors)(t)
     evaluated = map(sot.tensors) do x
