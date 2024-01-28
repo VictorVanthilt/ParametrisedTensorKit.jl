@@ -1,5 +1,6 @@
 using Revise, BlockTensorKit, MPSKit, TensorKit, MPSKitModels
 includet("../src/parametrisedtensormap.jl")
+includet("../src/sumoftensors.jl")
 includet("../src/mpstools.jl")
 
 using .MPSTools
