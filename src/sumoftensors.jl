@@ -17,15 +17,23 @@ function Base.getindex(sot::SumOfTensors, i::Integer)
     return sot.tensors[i]
 end
 
+function eval_coeff(sot::SumOfTensors, tval)
+    return sot(tval)
+end
+
 TensorKit.domain(t::SumOfTensors) = domain(t.tensors[1])
 TensorKit.codomain(t::SumOfTensors) = codomain(t.tensors[1])
 
 TensorKit.storagetype(::Type{<:SumOfTensors{S,N1,N2,T}}) where {S,N1,N2,T} = return TensorKit.storagetype(T)
 
+function MPSKit.ismpoidentity(::SumOfTensors)
+    return false
+end
+
 function (sot::SumOfTensors)(t)
     evaluated = map(sot.tensors) do x
         if x isa ParametrisedTensorMap
-            return x(t).coeff * x(t).tensor
+            return x(t)
         else
             return x
         end
@@ -48,23 +56,36 @@ Base.:+(t1::ParametrisedTensorMap, t2::AbstractTensorMap) = SumOfTensors(t1, t2)
 
 Base.:+(t1::AbstractTensorMap, t2::ParametrisedTensorMap) = SumOfTensors(t1, t2)
 
-# Multiplication methods
+# multiplication methods
+function Base.:*(t1::AbstractTensorMap, t2::SumOfTensors)
+    return SumOfTensors(map(t2.tensors) do x
+        return t1 * x
+    end...)
+end
+
+function Base.:*(t1::SumOfTensors, t2::AbstractTensorMap)
+    return SumOfTensors(map(t1.tensors) do x
+        return x * t2
+    end...)
+end
+
+# ======================
+# mul! methods
+# ======================
 function mul!(C::AbstractTensorMap, A::AbstractTensorMap, B::SumOfTensors, α::Number, β::Number)
-    println("here")
-    mul!(C, A, B.tensors[1], α, β)
-    println("passed")
-    for i in 2:length(B)
-        mul!(C, A, B.tensors[i], α, true)
+    C = ParametrisedTensorMap(C, β)
+    tensors = Array{Any}(missing, length(B))
+    for i in 1:length(B)
+        tensors[i] = α * A * B[i]
     end
-    return C
+    return SumOfTensors(tensors...)
 end
 
 function mul!(C::AbstractTensorMap, A::SumOfTensors, B::AbstractTensorMap, α::Number, β::Number)
-    println("here")
-    mul!(C, A[1], B, α, β)
-    println("passed")
-    for i in 2:length(B)
-        mul!(C, A, B.tensors[i], α, true)
+    C = ParametrisedTensorMap(C, β)
+    tensors = Array{Any}(missing, length(A))
+    for i in 1:length(A)
+        tensors[i] = α * A[i] * B
     end
-    return C
+    return SumOfTensors(tensors...)
 end
