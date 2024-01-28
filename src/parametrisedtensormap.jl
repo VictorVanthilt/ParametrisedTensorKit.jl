@@ -182,7 +182,9 @@ function tensorcontract!(C::AbstractTensorMap{S,N₁,N₂}, pAB::Index2Tuple,
     return SumOfTensors(β*newC, ParametrisedTensorMap(C, α))
 end
 
+# ======================
 # mul! methods
+# ======================
 function mul!(C::AbstractTensorMap, A::ParametrisedTensorMap, B::AbstractTensorMap, α::Number, β::Number)
     println("method 1")
     newalpha = combinecoeff(α, A.coeff)
