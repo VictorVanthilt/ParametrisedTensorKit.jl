@@ -2,6 +2,7 @@ using MPSKit, TensorKit, TensorOperations
 const TO = TensorOperations
 import TensorOperations.tensorcontract!
 import LinearAlgebra.mul!
+import LinearAlgebra.lmul!
 
 struct ParametrisedTensorMap{S,N1,N2,T<:AbstractTensorMap{S,N1,N2},E} <: AbstractTensorMap{S,N1,N2}
     tensor::T
@@ -203,4 +204,9 @@ function mul!(C::AbstractTensorMap, A::AbstractTensorMap, B::AbstractTensorMap, 
     newC = deepcopy(C)
     mul!(C, A, B, 1, 0)
     return SumOfTensors(β*newC, ParametrisedTensorMap(C, α))
+end
+
+function lmul!(α::Number, t::ParametrisedTensorMap)
+    println("HEEERE")
+    return ParametrisedTensorMap(t.tensor, combinecoeff(α, t.coeff))
 end
