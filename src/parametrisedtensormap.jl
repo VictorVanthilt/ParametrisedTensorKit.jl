@@ -9,6 +9,7 @@ struct ParametrisedTensorMap{S,N1,N2,T<:AbstractTensorMap{S,N1,N2},E} <: Abstrac
 end
 
 const PTM = ParametrisedTensorMap
+const TIMEDOP = Union{PTM, SumOfTensors}
 
 function ParametrisedTensorMap(tensor::T, coeff::E) where {S,N1,N2,T<:AbstractTensorMap{S,N1,N2},E}
     return ParametrisedTensorMap{S,N1,N2,T,E}(tensor, coeff)
@@ -22,18 +23,12 @@ TensorKit.domain(t::ParametrisedTensorMap) = domain(t.tensor)
 TensorKit.codomain(t::ParametrisedTensorMap) = codomain(t.tensor)
 
 function (T::ParametrisedTensorMap)(t::Number)
-    return ParametrisedTensorMap(T.tensor, T.coeff(t))
+    return T.coeff(t) * T.tensor
 end
 
 TensorKit.storagetype(::Type{<:ParametrisedTensorMap{S,N1,N2,T}}) where {S,N1,N2,T} = TensorKit.storagetype(T)
 
-# function TensorKit.block(t::ParametrisedTensorMap{S,N1,N2,T,E}, ::Trivial) where {S,N1,N2,T, E} 
-#     println("there")
-#     return TensorKit.block(t.tensor, Trivial()) * t.coeff
-# end
-
 # Representation (Very basic, come up with better one)
-
 # function Base.show(io::IO, t::ParametrisedTensorMap{S,N1,N2,T}) where {S,N1,N2,T}
 #     function myPad(s::String, n::Integer)
 #         strings = split(s, "\n")
@@ -79,6 +74,14 @@ function Base.:*(t::ParametrisedTensorMap, N::Number)
     return ParametrisedTensorMap(t.tensor, combinecoeff(t.coeff, N))
 end
 
+function Base.:*(f::Function, t::ParametrisedTensorMap)
+    return ParametrisedTensorMap(t.tensor, combinecoeff(f, t.coeff))
+end
+
+function Base.:*(f::Function, t::AbstractTensorMap)
+    return ParametrisedTensorMap(t, f)
+end
+
 function Base.:^(t::ParametrisedTensorMap, n::Integer)
     return ParametrisedTensorMap(t.tensor^n, t -> t.coeff(t)^n)
 end
@@ -113,9 +116,9 @@ function eval_coeff(t::ParametrisedTensorMap, tval)
     return t(tval)
 end
 
-function (H::MPOHamiltonian{T})(t) where {S,T<:BlockTensorMap{S,2,2,<:Union{MPSKit.MPOTensor, ParametrisedTensorMap, TensorKit.BraidingTensor}}}
+function (H::MPOHamiltonian{T})(t) where {S,T<:BlockTensorMap{S,2,2,<:Union{MPSKit.MPOTensor, ParametrisedTensorMap, TensorKit.BraidingTensor, SumOfTensors}}}
     return MPOHamiltonian(map(H.data) do x
-        new_subtensors = Dict(I => old_subtensor isa PTM ? eval_coeff(old_subtensor, t) : old_subtensor for (I, old_subtensor) in nonzero_pairs(x))
+        new_subtensors = Dict(I => old_subtensor isa TIMEDOP ? eval_coeff(old_subtensor, t) : old_subtensor for (I, old_subtensor) in nonzero_pairs(x))
         new_tensortype = Union{(typeof.(values(new_subtensors)))...}
 
         newx = BlockTensorMap{S,2,2,new_tensortype}(undef, x.codom, x.dom)
@@ -149,7 +152,6 @@ function tensorcontract!(C::AbstractTensorMap{S,N₁,N₂}, pAB::Index2Tuple,
                                           B::AbstractTensorMap{S}, pB::Index2Tuple, conjB::Symbol,
                                           α::Number, β::Number) where {S,N₁,N₂,T}
     newalpha = combinecoeff(α, A.coeff)
-    println("tc method 1")
     return tensorcontract!(C, pAB, A.tensor, pA, conjA, B, pB, conjB, newalpha, β)
 end
 
@@ -158,7 +160,6 @@ function tensorcontract!(C::AbstractTensorMap{S,N₁,N₂}, pAB::Index2Tuple,
                                           B::ParametrisedTensorMap, pB::Index2Tuple, conjB::Symbol,
                                           α::Number, β::Number) where {S,N₁,N₂}
     newalpha = combinecoeff(α, B.coeff)
-    println("tc method 2")
     return tensorcontract!(C, pAB, A, pA, conjA, B.tensor, pB, conjB, newalpha, β)
 end
 
@@ -167,7 +168,6 @@ function tensorcontract!(C::AbstractTensorMap{S,N₁,N₂}, pAB::Index2Tuple,
                                           B::ParametrisedTensorMap, pB::Index2Tuple, conjB::Symbol,
                                           α::Number, β::Number) where {S,N₁,N₂}
     newalpha = combinecoeff(α, combinecoeff(A.coeff, B.coeff))
-    println("tc method 3")
     return tensorcontract!(C, pAB, A.tensor, pA, conjA, B.tensor, pB, conjB, newalpha, β)
 end
 
@@ -176,7 +176,6 @@ function tensorcontract!(C::AbstractTensorMap{S,N₁,N₂}, pAB::Index2Tuple,
                                           A::AbstractTensorMap{S}, pA::Index2Tuple, conjA::Symbol,
                                           B::AbstractTensorMap{S}, pB::Index2Tuple, conjB::Symbol,
                                           α::Function, β::Number) where {S,N₁,N₂}
-    println("tc method 4")
     newC = deepcopy(C)
     tensorcontract!(C, pAB, A, pA, conjA, B, pB, conjB, 1, 0)
     return SumOfTensors(β*newC, ParametrisedTensorMap(C, α))
@@ -186,25 +185,21 @@ end
 # mul! methods
 # ======================
 function mul!(C::AbstractTensorMap, A::ParametrisedTensorMap, B::AbstractTensorMap, α::Number, β::Number)
-    println("method 1")
     newalpha = combinecoeff(α, A.coeff)
     return mul!(C, A.tensor, B, newalpha, β)
 end
 
 function mul!(C::AbstractTensorMap, A::AbstractTensorMap, B::ParametrisedTensorMap, α::Number, β::Number)
-    println("method 2")
     newalpha = combinecoeff(α, B.coeff)
     return mul!(C, A, B.tensor, newalpha, β)
 end
 
 function mul!(C::AbstractTensorMap, A::ParametrisedTensorMap, B::ParametrisedTensorMap, α::Number, β::Number)
-    println("method 3")
     newalpha = combinecoeff(α, combinecoeff(A.coeff, B.coeff))
     return mul!(C, A.tensor, B.tensor, newalpha, β)
 end
 
 function mul!(C::AbstractTensorMap, A::AbstractTensorMap, B::AbstractTensorMap, α::Function, β::Number)
-    println("method 4")
     newC = deepcopy(C)
     mul!(C, A, B, 1, 0)
     return SumOfTensors(β*newC, ParametrisedTensorMap(C, α))
