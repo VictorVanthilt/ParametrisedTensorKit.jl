@@ -34,11 +34,28 @@ O_Ising = make_time_mpo(H_Ising, 0.1, TaylorCluster()) #TODO
 
 ψ₀ = FiniteMPS(rand, ComplexF64, 5, ℂ^2, ℂ^2)
 
-ψ₁, _ = timestep(ψ₀, H_Ising, 1, .01, TDVP())
+ψ₁, _ = timestep(ψ₀, H_Ising, 1, .01, TDVP());
 
-ψ₂, _ = timestep(ψ₀, H_Ising, 1, .01, TDVP2())
+ψ₂, _ = timestep(ψ₀, H_Ising, 1, .01, TDVP2());
 
-# SumOfTensorstest
+# Batch TDVP test
+ψ, env = timestep(ψ₀, H_Ising,  .25, .25, TDVP2());
+
+for i in 1:100
+    ψ, env = timestep(ψ, H_Ising,  .25, .25, TDVP(), env);
+end
+
+# Batch TDVP2 test
+ψ, env = timestep(ψ₀, H_Ising,  .25, .25, TDVP2());
+
+for i in 1:100
+    ψ, env = timestep(ψ, H_Ising,  .25, .25, TDVP2(), env);
+end
+
+# ===================
+# Sum of tensors test
+# ===================
+
 f = t -> sin(t)
 fX = ParametrisedTensorMap(S_x(), f)
 fZ = ParametrisedTensorMap(S_z(), f)
@@ -55,6 +72,22 @@ data_sum[1, 3, 3] = 1;
 
 H = MPOHamiltonian(data_sum)
 
-ψ₀ = FiniteMPS(rand, ComplexF64, 2, ℂ^2, ℂ^2)
+ψ₀ = FiniteMPS(rand, ComplexF64, 10, ℂ^2, ℂ^2)
 
-ψ₁, _ = timestep(ψ₀, H,  .25, .25, TDVP());
+ψ₁, _ = timestep(ψ₀, H,  1, .01, TDVP());
+
+ψ₂, _ = timestep(ψ₀, H,  1, .01, TDVP2());
+
+# Batch TDVP test
+ψ, env = timestep(ψ₀, H,  .25, .25, TDVP2());
+
+for i in 1:100
+    ψ, env = timestep(ψ, H,  .25, .25, TDVP(), env);
+end
+
+# Batch TDVP2 test
+ψ, env = timestep(ψ₀, H,  .25, .25, TDVP2());
+
+for i in 1:100
+    ψ, env = timestep(ψ, H,  .25, .25, TDVP2(), env);
+end
