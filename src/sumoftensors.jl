@@ -1,3 +1,6 @@
+using MPSKit, TensorKit, TensorOperations
+import LinearAlgebra.mul!
+
 struct SumOfTensors{S,N1,N2,T<:AbstractTensorMap{S,N1,N2}} <: AbstractTensorMap{S,N1,N2}
     tensors::Vector{T}
 end
