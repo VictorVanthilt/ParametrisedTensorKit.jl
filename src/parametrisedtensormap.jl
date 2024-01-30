@@ -51,6 +51,11 @@ TensorKit.storagetype(::Type{<:ParametrisedTensorMap{S,N1,N2,T}}) where {S,N1,N2
 #     print(io, "Tensor: " * myPad(repr(t.tensor), 7))
 # end
 
+function Base.show(io::IO, t::ParametrisedTensorMap)
+    print(io, "ParametrisedTensorMap: ")
+    print(io, "αT")
+end
+
 # Multiplication methods
 function Base.:*(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
     newtens = t1.tensor * t2.tensor
