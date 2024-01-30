@@ -73,7 +73,7 @@ function Base.:*(t1::AbstractTensorMap, t2::ParametrisedTensorMap)
 end
 
 function Base.:*(N::Number, t::ParametrisedTensorMap)
-    return ParametrisedTensorMap(t.tensor, combinecoeff(N, t.coeff))
+    return ParametrisedTensorMap(N * t.tensor, t.coeff)
 end
 
 function Base.:*(t::ParametrisedTensorMap, N::Number)
