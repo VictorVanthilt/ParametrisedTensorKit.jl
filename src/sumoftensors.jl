@@ -1,12 +1,31 @@
 using MPSKit, TensorKit, TensorOperations
 import LinearAlgebra.mul!
 
+#TODO: check compatibility of tensors at construction
+
 struct SumOfTensors{S,N1,N2,T<:AbstractTensorMap{S,N1,N2}} <: AbstractTensorMap{S,N1,N2}
     tensors::Vector{T}
 end
 
 function SumOfTensors(tens...)
     return SumOfTensors(collect(tens))
+end
+
+function Base.show(io::IO, sot::SumOfTensors)
+    subscript(i) = join(Char(0x2080 + d) for d in reverse!(digits(i)))
+
+    print(io, "SumOfTensors: ")
+    for (i, tensor) in enumerate(sot.tensors)
+        if tensor isa ParametrisedTensorMap
+            print(io, "α", subscript(i))
+            print(io, "T", subscript(i))
+        else
+            print(io, "T", subscript(i))
+        end
+        if i < length(sot.tensors)
+            print(io, " + ")
+        end
+    end
 end
 
 function Base.length(sot::SumOfTensors)
@@ -46,15 +65,21 @@ function Base.:+(sot1::SumOfTensors, sot2::SumOfTensors)
     return SumOfTensors(vcat(sot1.tensors, sot2.tensors))
 end
 
-Base.:+(t::ParametrisedTensorMap, sot::SumOfTensors) = SumOfTensors(vcat(t, sot.tensors))
+Base.:+(t::ParametrisedTensorMap, sot::SumOfTensors) = SumOfTensors(t, sot.tensors...)
 
-Base.:+(sot::SumOfTensors, t::ParametrisedTensorMap) = SumOfTensors(vcat(t, sot.tensors))
+Base.:+(sot::SumOfTensors, t::ParametrisedTensorMap) = SumOfTensors(sot.tensors..., t)
+
+Base.:+(t::AbstractTensorMap, sot::SumOfTensors) = SumOfTensors(t, sot.tensors...)
+
+Base.:+(sot::SumOfTensors, t::AbstractTensorMap) = SumOfTensors(sot.tensors..., t)
 
 Base.:+(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap) = SumOfTensors(t1, t2)
 
 Base.:+(t1::ParametrisedTensorMap, t2::AbstractTensorMap) = SumOfTensors(t1, t2)
 
 Base.:+(t1::AbstractTensorMap, t2::ParametrisedTensorMap) = SumOfTensors(t1, t2)
+
+
 
 # multiplication methods
 function Base.:*(t1::AbstractTensorMap, t2::SumOfTensors)
