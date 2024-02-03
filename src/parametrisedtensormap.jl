@@ -54,6 +54,7 @@ TensorKit.storagetype(::Type{<:ParametrisedTensorMap{S,N1,N2,T}}) where {S,N1,N2
 function Base.show(io::IO, t::ParametrisedTensorMap)
     print(io, "ParametrisedTensorMap: ")
     print(io, "αT")
+    print(io, " where α = ", t.coeff)
 end
 
 # Multiplication methods
