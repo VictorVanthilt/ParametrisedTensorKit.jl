@@ -1,7 +1,6 @@
 using Revise, BlockTensorKit, MPSKit, TensorKit, MPSKitModels
 includet("../src/sumoftensors.jl")
 includet("../src/parametrisedtensormap.jl")
-includet("../src/mpstools.jl")
 
 function f(t)
     return sin(t)
@@ -32,4 +31,5 @@ H_sum(1)
 
 H_mixed = @mpoham fσx{Lattice[1]} + sot1{Lattice[2]}
 
-eltype((sot2, sot1))
+LL = FiniteChain(100000) #Large Lattice
+H_large = @mpoham sum(fσx{LL[i]} for i in 1:length(LL));
