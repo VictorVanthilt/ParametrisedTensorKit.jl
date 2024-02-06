@@ -184,13 +184,6 @@ function mul!(C::AbstractTensorMap, A::ParametrisedTensorMap, B::ParametrisedTen
     return mul!(C, A.tensor, B.tensor, newalpha, β)
 end
 
-# Not needed anymore as function * tensormap is implemented
-# function mul!(C::AbstractTensorMap, A::AbstractTensorMap, B::AbstractTensorMap, α::Function, β::Number)
-#     newC = deepcopy(C)
-#     mul!(C, A, B, 1, 0)
-#     return SumOfTensors(β*newC, ParametrisedTensorMap(C, α))
-# end
-
 function lmul!(α::Number, t::ParametrisedTensorMap)
     println("HEEERE")
     return ParametrisedTensorMap(t.tensor, combinecoeff(α, t.coeff))
