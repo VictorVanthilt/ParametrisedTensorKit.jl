@@ -29,28 +29,6 @@ end
 
 TensorKit.storagetype(::Type{<:ParametrisedTensorMap{S,N1,N2,T}}) where {S,N1,N2,T} = TensorKit.storagetype(T)
 
-# Representation (Very basic, come up with better one)
-# function Base.show(io::IO, t::ParametrisedTensorMap{S,N1,N2,T}) where {S,N1,N2,T}
-#     function myPad(s::String, n::Integer)
-#         strings = split(s, "\n")
-#         newstrings = []
-#         for (i, string) in enumerate(strings)
-#             L = length(string)
-#             if i > 1
-#                 string = lpad(string, L + n, " ")
-#             end
-#             string *= "\n"
-#             append!(newstrings, string)
-#         end
-#         newstring = join(newstrings)
-#         return newstring
-#     end
-
-#     println(io, "ParametrisedTensorMap")
-#     println(io, "Coeff: ", t.coeff)
-#     print(io, "Tensor: " * myPad(repr(t.tensor), 7))
-# end
-
 function Base.show(io::IO, t::ParametrisedTensorMap)
     print(io, "ParametrisedTensorMap: ")
     print(io, "αT")
