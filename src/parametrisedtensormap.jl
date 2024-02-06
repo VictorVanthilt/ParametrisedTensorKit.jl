@@ -1,5 +1,3 @@
-using MPSKit, TensorKit, TensorOperations
-const TO = TensorOperations
 import TensorOperations.tensorcontract!
 import LinearAlgebra.mul!
 import LinearAlgebra.lmul!
@@ -8,9 +6,6 @@ struct ParametrisedTensorMap{S,N1,N2,T<:AbstractTensorMap{S,N1,N2}} <: AbstractT
     tensor::T
     coeff
 end
-
-const PTM = ParametrisedTensorMap
-const TIMEDOP = Union{PTM, SumOfTensors}
 
 function ParametrisedTensorMap(tensor::T, coeff) where {S,N1,N2,T<:AbstractTensorMap{S,N1,N2}}
     return ParametrisedTensorMap{S,N1,N2,T}(tensor, coeff)
@@ -99,19 +94,6 @@ end
 
 function eval_coeff(t::ParametrisedTensorMap, tval)
     return t(tval)
-end
-
-function (H::MPOHamiltonian{T})(t) where {S,T<:BlockTensorMap{S,2,2,<:Union{MPSKit.MPOTensor, ParametrisedTensorMap, TensorKit.BraidingTensor, SumOfTensors}}}
-    return MPOHamiltonian(map(H.data) do x
-        new_subtensors = Dict(I => old_subtensor isa TIMEDOP ? eval_coeff(old_subtensor, t) : old_subtensor for (I, old_subtensor) in nonzero_pairs(x))
-        new_tensortype = Union{(typeof.(values(new_subtensors)))...}
-
-        newx = BlockTensorMap{S,2,2,new_tensortype}(undef, x.codom, x.dom)
-        for (key, value) in new_subtensors
-            newx[key] = value
-        end
-        return newx
-    end)
 end
 
 TensorKit.has_shared_permute(t::ParametrisedTensorMap, args...) = false

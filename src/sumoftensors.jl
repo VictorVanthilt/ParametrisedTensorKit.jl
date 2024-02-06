@@ -1,4 +1,3 @@
-using MPSKit, TensorKit, TensorOperations
 import LinearAlgebra.mul!
 
 #TODO: check compatibility of tensors at construction
