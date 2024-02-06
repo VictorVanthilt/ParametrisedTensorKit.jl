@@ -1,9 +1,7 @@
 using Revise, BlockTensorKit, MPSKit, TensorKit, MPSKitModels
-includet("../src/parametrisedtensormap.jl")
-includet("../src/sumoftensors.jl")
-includet("../src/mpstools.jl")
 
-using .MPSTools
+includet("../src/ParametrisedTensorKit.jl")
+using .ParametrisedTensorKit
 
 # Sinusoidal coefficient
 coeff(t) = sin(t*2π)

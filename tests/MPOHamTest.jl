@@ -1,6 +1,7 @@
 using Revise, BlockTensorKit, MPSKit, TensorKit, MPSKitModels
-includet("../src/sumoftensors.jl")
-includet("../src/parametrisedtensormap.jl")
+
+includet("../src/ParametrisedTensorKit.jl")
+using .ParametrisedTensorKit
 
 function f(t)
     return sin(t)
