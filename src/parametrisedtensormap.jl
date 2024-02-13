@@ -167,6 +167,5 @@ function mul!(C::AbstractTensorMap, A::ParametrisedTensorMap, B::ParametrisedTen
 end
 
 function lmul!(α::Number, t::ParametrisedTensorMap)
-    println("HEEERE")
     return ParametrisedTensorMap(t.tensor, combinecoeff(α, t.coeff))
 end
