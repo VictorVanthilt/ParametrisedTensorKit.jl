@@ -58,7 +58,15 @@ function Base.:*(f::Function, t::ParametrisedTensorMap)
     return ParametrisedTensorMap(t.tensor, combinecoeff(f, t.coeff))
 end
 
+function Base.:*(t::ParametrisedTensorMap, f::Function)
+    return ParametrisedTensorMap(t.tensor, combinecoeff(t.coeff, f))
+end
+
 function Base.:*(f::Function, t::AbstractTensorMap)
+    return ParametrisedTensorMap(t, f)
+end
+
+function Base.:*(t::AbstractTensorMap, f::Function)
     return ParametrisedTensorMap(t, f)
 end
 
