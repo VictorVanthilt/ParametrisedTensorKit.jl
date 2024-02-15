@@ -4,19 +4,21 @@ includet("../src/ParametrisedTensorKit.jl")
 using .ParametrisedTensorKit
 
 f(t) = sin(t)
-
+g(t) = cos(t)
 T = σᶻ()
 
-fT = f*T
+A = f*T
+A(0)
+A(π/2)
 
-fT(0)
-fT(3π/2)
+B = A*A
+B(π/2)
 
-f*fT
-2*fT
+C = T + A + B
+C(π/2)
 
-fT*f
+Lat = FiniteChain(2)
 
-(f*fT*fT*f)(π/2)
+H = @mpoham (f*σᶻ()){Lat[1]} + (g*σˣ()){Lat[2]}
 
-SOT = f*T + T + 2*(f*T)
+H(1)
