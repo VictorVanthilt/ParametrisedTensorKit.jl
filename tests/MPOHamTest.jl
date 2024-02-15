@@ -27,10 +27,14 @@ H = @mpoham fσx{Lattice[1]} + gσz{Lattice[2]}
 H(1)
 
 H_sum = @mpoham sot1{Lattice[1]} + sot2{Lattice[2]}
+H_sum = @mpoham (fσx + fσz){Lattice[1]} + (gσx + gσz){Lattice[2]}
 
 H_sum(1)
 
-H_mixed = @mpoham fσx{Lattice[1]} + sot1{Lattice[2]}
+H_mixed = @mpoham SumOfTensors(fσx){Lattice[1]} + sot1{Lattice[2]}
 
-LL = FiniteChain(100000) #Large Lattice
-H_large = @mpoham sum(fσx{LL[i]} for i in 1:length(LL));
+H_mixed(1)
+
+# Two-Site PTM and SOT's 
+S_x()⊗S_x()
+fσx ⊗ fσx
