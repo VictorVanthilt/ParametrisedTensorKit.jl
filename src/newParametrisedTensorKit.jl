@@ -1,12 +1,10 @@
-import TensorOperations.tensorcontract!
-import LinearAlgebra.mul!
-import LinearAlgebra.lmul!
+module ParametrisedTensorKit
 
-struct ParametrisedTensorMap{S,N1,N2,T<:AbstractTensorMap{S,N1,N2}} <: AbstractTensorMap{S,N1,N2}
-    tensor::Vector{T}
-    coeffs::Vector{Union{Number, Function}}
-end
+using MPSKit, TensorKit, TensorOperations, BlockTensorKit
 
-function ParametrisedTensorMap(tensor::T, coeff) where {S,N1,N2,T<:AbstractTensorMap{S,N1,N2}}
-    return ParametrisedTensorMap{S,N1,N2,T}(Vector(T), Vector(coeff))
+export ParametrisedTensorMap
+
+include("newparametrisedtensormap.jl")
+# include("MPSKit.jl")
+
 end
