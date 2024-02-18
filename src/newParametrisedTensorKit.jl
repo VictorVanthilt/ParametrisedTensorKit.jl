@@ -5,6 +5,6 @@ using MPSKit, TensorKit, TensorOperations, BlockTensorKit
 export ParametrisedTensorMap
 
 include("newparametrisedtensormap.jl")
-# include("MPSKit.jl")
+include("newMPSKit.jl")
 
 end

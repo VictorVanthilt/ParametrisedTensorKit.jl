@@ -84,9 +84,7 @@ end
 
 # MPSKit methods
 # --------------
-function MPSKit.ismpoidentity(::ParametrisedTensorMap)
-    return false
-end
+MPSKit.ismpoidentity(::ParametrisedTensorMap) = false
 
 # Parameter evaluation
 # --------------------
@@ -100,6 +98,10 @@ function (T::ParametrisedTensorMap)(t::Number)
         end
     end
     return sum(evaluated)
+end
+
+function eval_coeff(t::ParametrisedTensorMap, tval)
+    return t(tval)
 end
 
 # Coefficient combination
@@ -218,10 +220,11 @@ end
 
 # tensorcontract methods
 # ----------------------
+# Compute `C = β * C + α * permutedims(opA(A), pC)` without creating the intermediate
 
-# TODO
+# TODO?
 
 # mul! methods
 # ------------
 
-# TODO
+# TODO?
