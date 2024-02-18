@@ -75,6 +75,19 @@ TensorKit.codomain(t::ParametrisedTensorMap) = codomain(t.tensors[1])
 
 TensorKit.storagetype(::Type{<:ParametrisedTensorMap{S,N1,N2,T}}) where {S,N1,N2,T} = TensorKit.storagetype(T)
 
+TensorKit.has_shared_permute(t::ParametrisedTensorMap, args...) = false
+
+function TensorKit.similar(t::ParametrisedTensorMap, T::Type, P::TensorMapSpace)
+    tens = similar(t.tensors, T, P)
+    return ParametrisedTensorMap(tens)
+end
+
+# MPSKit methods
+# --------------
+function MPSKit.ismpoidentity(::ParametrisedTensorMap)
+    return false
+end
+
 # Parameter evaluation
 # --------------------
 function (T::ParametrisedTensorMap)(t::Number)
@@ -183,8 +196,32 @@ function Base.:*(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
             tempTens[j] = t1.tensors[i] * t2.tensors[j]
             tempCoeffs[j] = combinecoeff(t1.coeffs[i],t2.coeffs[j])
         end
-        
+
         ptms[i] = ParametrisedTensorMap(tempTens, tempCoeffs)
     end
     return sum(ptms)
 end
+
+function adjoint(t::ParametrisedTensorMap)
+    t.tensors = map(t.tensors) do x
+        return adjoint(x)
+    end
+    t.coeffs = map(t.coeffs) do x
+        return adjoint(x)
+    end
+    return t
+end
+
+function convert(::Type{ParametrisedTensorMap}, t::AbstractTensorMap)
+    return ParametrisedTensorMap(t)
+end
+
+# tensorcontract methods
+# ----------------------
+
+# TODO
+
+# mul! methods
+# ------------
+
+# TODO
