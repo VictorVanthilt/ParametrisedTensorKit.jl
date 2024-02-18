@@ -16,3 +16,12 @@ storagetype(PTMs)
 
 PTM(1)
 PTMs(1.0)
+
+T + PTM
+T + PTMs
+PTM + T
+PTMs + T
+PTM + PTMs
+PTMs + PTM
+PTM + PTM
+PTMs + PTMs
