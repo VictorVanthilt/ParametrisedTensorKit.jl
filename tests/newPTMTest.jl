@@ -25,3 +25,8 @@ PTM + PTMs
 PTMs + PTM
 PTM + PTM
 PTMs + PTMs
+
+length(PTMs + PTM)
+
+A = PTM * PTMs
+B = PTMs * PTMs

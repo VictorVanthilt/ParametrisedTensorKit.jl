@@ -36,6 +36,10 @@ function ParametrisedTensorMap(tensors::Vector{T}) where {T<:AbstractTensorMap}
     return ParametrisedTensorMap(tensors, fill(1, length(tensors)))
 end
 
+function Base.length(t::ParametrisedTensorMap)
+    return length(t.tensors)
+end
+
 # Construct by multiplying coefficient function
 function Base.:*(f::Function, t::AbstractTensorMap)
     return ParametrisedTensorMap(t, f)
@@ -169,6 +173,20 @@ function Base.:*(t1::ParametrisedTensorMap, t2::AbstractTensorMap)
 end
 
 function Base.:*(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
-    # TODO, distributive multiplication
-    return ParametrisedTensorMap(newtensors, newcoeffs)
+    ptms = Vector{ParametrisedTensorMap}(undef, length(t1))
+
+    S = supertype(typeof(t1.tensors[1])).parameters[1]
+    N1 = length(domain(t1.tensors[1]))
+    N2 = length(codomain(t1.tensors[1]))
+
+    for i in 1:length(t1)
+        tempTens = Vector{AbstractTensorMap{S,N1,N2}}(undef, length(t2))
+        tempCoeffs = Vector{Union{Number, Function}}(undef, length(t2))
+        for j in 1:length(t2)
+            tempTens[j] = t1.tensors[i] * t2.tensors[j]
+            tempCoeffs[j] = combinecoeff(t1.coeffs[i],t2.coeffs[j])
+        end
+        ptms[i] = ParametrisedTensorMap(tempTens, tempCoeffs)
+    end
+    return sum(ptms)
 end
