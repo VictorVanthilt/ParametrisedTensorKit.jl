@@ -175,17 +175,15 @@ end
 function Base.:*(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
     ptms = Vector{ParametrisedTensorMap}(undef, length(t1))
 
-    S = supertype(typeof(t1.tensors[1])).parameters[1]
-    N1 = length(domain(t1.tensors[1]))
-    N2 = length(codomain(t1.tensors[1]))
-
     for i in 1:length(t1)
-        tempTens = Vector{AbstractTensorMap{S,N1,N2}}(undef, length(t2))
-        tempCoeffs = Vector{Union{Number, Function}}(undef, length(t2))
+        tempTens = similar(t2.tensors, length(t2))
+        tempCoeffs = similar(t2.coeffs, length(t2))
+
         for j in 1:length(t2)
             tempTens[j] = t1.tensors[i] * t2.tensors[j]
             tempCoeffs[j] = combinecoeff(t1.coeffs[i],t2.coeffs[j])
         end
+        
         ptms[i] = ParametrisedTensorMap(tempTens, tempCoeffs)
     end
     return sum(ptms)
