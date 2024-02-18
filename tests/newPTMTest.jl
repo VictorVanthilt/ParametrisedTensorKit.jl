@@ -1,7 +1,9 @@
 using Revise, BlockTensorKit, MPSKit, TensorKit, MPSKitModels
 
 includet("../src/newParametrisedTensorKit.jl")
+includet("../src/mpstools.jl")
 using .ParametrisedTensorKit
+using .MPSTools
 
 f(t) = sin(t)
 T = S_x()
@@ -30,3 +32,10 @@ length(PTMs + PTM)
 
 A = PTM * PTMs
 B = PTMs * PTMs
+
+Lat = FiniteChain(2)
+H = @mpoham (f*σˣ() + PTMs + PTMs + B*B){Lat[1]} + (f*σˣ() + f*σʸ() + B){Lat[2]}
+H(π/2)
+
+ψ = state_to_mps([(1,0), (0,1)])
+timestep(ψ, H, 1, 0.1, TDVP())[1]
