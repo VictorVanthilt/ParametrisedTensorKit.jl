@@ -65,6 +65,11 @@ function Base.show(io::IO, ptm::ParametrisedTensorMap)
             print(io, " + ")
         end
     end
+    print(io, " | ")
+    print(io, codomain(ptm.tensors[1]))
+    print(io, " ← ")
+    print(io, domain(ptm.tensors[1]))
+
 end
 
 # TensorKit methods
