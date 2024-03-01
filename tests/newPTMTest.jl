@@ -6,6 +6,7 @@ using .ParametrisedTensorKit
 using .MPSTools
 
 f(t) = sin(t)
+g(t) = cos(t)
 T = S_x()
 
 PTM = ParametrisedTensorMap(T, f)
@@ -39,3 +40,20 @@ H(π/2)
 
 ψ = state_to_mps([(1,0), (0,1)])
 timestep(ψ, H, 1, 0.1, TDVP())[1]
+timestep(ψ, H, 1, 0.1, TDVP2())[1]
+
+f1 = t -> sin(t)
+f2 = t -> cos(t)
+
+H = @mpoham begin
+    (f1*S_x() + PTMs){Lat[1]} + (f2*S_z()){Lat[2]}
+end
+
+# Multiple timesteps test
+
+ψ = state_to_mps([(1,0), (0,1)])
+ψ, envs = timestep(ψ, H, 1, 0.1, TDVP2())
+
+for i in 1:10
+    ψ, envs = timestep(ψ, H, 1, 0.1, TDVP2(), envs)
+end
