@@ -1,5 +1,6 @@
 import TensorOperations.tensorcontract!
 import TensorOperations.tensorfree!
+import VectorInterface.scale!
 import LinearAlgebra.mul!
 import LinearAlgebra.lmul!
 
@@ -218,14 +219,30 @@ function adjoint(t::ParametrisedTensorMap)
     return t
 end
 
-function convert(::Type{ParametrisedTensorMap}, t::AbstractTensorMap)
+function Base.convert(::Type{ParametrisedTensorMap}, t::AbstractTensorMap)
+    return ParametrisedTensorMap(t)
+end
+
+function Base.convert(::Type{ParametrisedTensorMap{S, N1, N2, T}}, t::T) where {S, N1, N2, T<:AbstractTensorMap{S, N1, N2}}
     return ParametrisedTensorMap(t)
 end
 
 # scale! methods
 # --------------
+function scale!(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number)
+    space(ty) == space(tx) || throw(SpaceMismatch("$(space(ty)) ≠ $(space(tx))"))
 
-# TODO
+    newTens   = copy(tx.tensors)
+    newCoeffs = similar(tx.coeffs,  length(tx))
+    
+    for i in eachindex(tx.coeffs)
+        newCoeffs[i] = combinecoeff(tx.coeffs[i], α)
+    end
+    return ParametrisedTensorMap(newTens, newCoeffs)
+end
+
+
+
 
 # tensorcontract methods
 # ----------------------
