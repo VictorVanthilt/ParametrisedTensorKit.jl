@@ -2,7 +2,7 @@
 
 julia_version = "1.10.0"
 manifest_format = "2.0"
-project_hash = "ad85b3a1423f840325b89291b7bb7bc9a60bfff4"
+project_hash = "7b34fa7e02bc024dee6206897ba2edbe8bccaef4"
 
 [[deps.Accessors]]
 deps = ["CompositionsBase", "ConstructionBase", "Dates", "InverseFunctions", "LinearAlgebra", "MacroTools", "Test"]
@@ -767,9 +767,9 @@ uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 
 [[deps.VectorInterface]]
 deps = ["LinearAlgebra"]
-git-tree-sha1 = "ecc747f33d2cb2c7ae73e1346e1b24e338f96012"
+git-tree-sha1 = "ed8f91274e744e5030c349e76fa98bf68236766f"
 uuid = "409d34a3-91d5-4945-b6ec-7529ddf182d8"
-version = "0.4.2"
+version = "0.4.4"
 
 [[deps.VersionParsing]]
 git-tree-sha1 = "58d6e80b4ee071f5efd07fda82cb9fbe17200868"
