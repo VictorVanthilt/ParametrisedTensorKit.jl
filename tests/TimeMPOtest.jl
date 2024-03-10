@@ -1,6 +1,6 @@
 using Revise, BlockTensorKit, MPSKit, TensorKit, MPSKitModels
 
-includet("../src/newParametrisedTensorKit.jl")
+includet("../src/ParametrisedTensorKit.jl")
 using .ParametrisedTensorKit
 
 f(t) = sin(t)

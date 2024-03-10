@@ -1,6 +1,6 @@
 using Revise, BlockTensorKit, MPSKit, TensorKit, MPSKitModels
 
-includet("../src/newParametrisedTensorKit.jl")
+includet("../src/ParametrisedTensorKit.jl")
 includet("../src/mpstools.jl")
 using .ParametrisedTensorKit
 using .MPSTools
