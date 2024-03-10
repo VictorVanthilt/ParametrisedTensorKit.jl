@@ -1,6 +1,6 @@
-const TIMEDOP = ParametrisedTensorMap
+const TIMEDOP = Union{ParametrisedTensorMap, SumOfTensors}
 
-function (H::MPOHamiltonian{T})(t) where {S,T<:BlockTensorMap{S,2,2,<:Union{MPSKit.MPOTensor, ParametrisedTensorMap, TensorKit.BraidingTensor}}}
+function (H::MPOHamiltonian{T})(t) where {S,T<:BlockTensorMap{S,2,2,<:Union{MPSKit.MPOTensor, ParametrisedTensorMap, TensorKit.BraidingTensor, SumOfTensors}}}
     return MPOHamiltonian(map(H.data) do x
         new_subtensors = Dict(I => old_subtensor isa TIMEDOP ? eval_coeff(old_subtensor, t) : old_subtensor for (I, old_subtensor) in nonzero_pairs(x))
         new_tensortype = Union{(typeof.(values(new_subtensors)))...}
