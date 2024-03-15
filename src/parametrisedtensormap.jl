@@ -1,6 +1,7 @@
 import TensorOperations.tensorcontract!
 import TensorOperations.tensorfree!
 import VectorInterface.scale!
+import VectorInterface.add!
 import LinearAlgebra.mul!
 import LinearAlgebra.lmul!
 
@@ -151,8 +152,9 @@ end
 # Multiplication methods
 # ----------------------
 function Base.:*(α::Number, t::ParametrisedTensorMap)
-    newcoeffs = map(t.coeffs) do x
-        return combinecoeff(α, x)
+    newcoeffs = Vector{Union{Number, Function}}(undef, length(t))
+    for i in eachindex(t.coeffs)
+        newcoeffs[i] = combinecoeff(α, t.coeffs[i])
     end
     return ParametrisedTensorMap(t.tensors, newcoeffs)
 end
@@ -227,8 +229,8 @@ function Base.convert(::Type{ParametrisedTensorMap{S, N1, N2, T}}, t::T) where {
     return ParametrisedTensorMap(t)
 end
 
-# scale! methods
-# --------------
+# VectorInterface methods
+# -----------------------
 function scale!(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number)
     space(ty) == space(tx) || throw(SpaceMismatch("$(space(ty)) ≠ $(space(tx))"))
 
@@ -241,7 +243,9 @@ function scale!(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number)
     return ParametrisedTensorMap(newTens, newCoeffs)
 end
 
+scale!(t::ParametrisedTensorMap, α::Number) = α * t
 
+add!(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number, β::Number) = scale!(ty, β) + scale!(tx, α)
 
 
 # tensorcontract methods
