@@ -1,4 +1,4 @@
-struct ParametrisedTensorMap{S,N1,N2,T<:AbstractTensorMap{S,N1,N2}} <: AbstractTensorMap{S,N1,N2}
+struct ParametrisedTensorMap{E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}} <: AbstractTensorMap{E,S,N1,N2}
     tensors::Vector{T}
     coeffs::Vector{Union{Number, Function}}
 end
@@ -6,19 +6,19 @@ end
 # Constructors
 # ------------
 
-function ParametrisedTensorMap(tensor::T, coeff::C) where {S,N1,N2,T<:AbstractTensorMap{S,N1,N2},C<:Union{Number, Function}}
-    return ParametrisedTensorMap{S,N1,N2,T}([tensor], [coeff])
+function ParametrisedTensorMap(tensor::T, coeff::C) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2},C<:Union{Number, Function}}
+    return ParametrisedTensorMap{E,S,N1,N2,T}([tensor], [coeff])
 end
 
-function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Union{<:Number, <:Function}}) where {S,N1,N2,T<:AbstractTensorMap{S,N1,N2}}
-    return ParametrisedTensorMap{S,N1,N2,T}(tensors, coeffs)
+function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Union{<:Number, <:Function}}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
+    return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs)
 end
 
-function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Any}) where {S,N1,N2,T<:AbstractTensorMap{S,N1,N2}}
+function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Any}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
     # check if the coeffs are only numbers and functions, then stuff them in a vector{number, function} if not, give error
     if all(x -> x isa Union{Number, Function}, coeffs)
         coeffVector = Vector{Union{Number, Function}}(coeffs)
-        return ParametrisedTensorMap{S,N1,N2,T}(tensors, coeffVector)
+        return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffVector)
     else
         throw(ArgumentError("coefficients must be a vector of numbers or functions (or a mix)"))
     end
@@ -66,24 +66,6 @@ function Base.show(io::IO, ptm::ParametrisedTensorMap)
     print(io, domain(ptm.tensors[1]))
 
 end
-
-# TensorKit methods
-# -----------------
-TensorKit.domain(t::ParametrisedTensorMap) = domain(t.tensors[1])
-TensorKit.codomain(t::ParametrisedTensorMap) = codomain(t.tensors[1])
-
-TensorKit.storagetype(::Type{<:ParametrisedTensorMap{S,N1,N2,T}}) where {S,N1,N2,T} = TensorKit.storagetype(T)
-
-TensorKit.has_shared_permute(t::ParametrisedTensorMap, args...) = false
-
-function TensorKit.similar(t::ParametrisedTensorMap, T::Type, P::TensorMapSpace)
-    tens = similar(t.tensors, T, P)
-    return ParametrisedTensorMap(tens)
-end
-
-# MPSKit methods
-# --------------
-MPSKit.ismpoidentity(::ParametrisedTensorMap) = false
 
 # Parameter evaluation
 # --------------------

@@ -23,3 +23,5 @@ function (H::MPOHamiltonian{T})(t) where {S,E<:Number,T<:BlockTensorMap{S,2,2,E}
         return newx
     end)
 end
+
+MPSKit.ismpoidentity(::ParametrisedTensorMap) = false
