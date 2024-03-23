@@ -14,7 +14,7 @@ function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Union{<:Number
     return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs)
 end
 
-function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Any}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
+function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{<:Any}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
     # check if the coeffs are only numbers and functions, then stuff them in a vector{number, function} if not, give error
     if all(x -> x isa Union{Number, Function}, coeffs)
         coeffVector = Vector{Union{Number, Function}}(coeffs)
@@ -145,6 +145,7 @@ function Base.:*(f::Function, t::ParametrisedTensorMap)
     newcoeffs = map(t.coeffs) do x
         return combinecoeff(f, x)
     end
+    typeof(newcoeffs) == Vector{Union{Number, Function}} || convert(Vector{Union{Number, Function}}, newcoeffs)
     return ParametrisedTensorMap(t.tensors, newcoeffs)
 end
 
@@ -200,6 +201,6 @@ function Base.convert(::Type{ParametrisedTensorMap}, t::AbstractTensorMap)
     return ParametrisedTensorMap(t)
 end
 
-function Base.convert(::Type{ParametrisedTensorMap{S, N1, N2, T}}, t::T) where {S, N1, N2, T<:AbstractTensorMap{S, N1, N2}}
+function Base.convert(::Type{ParametrisedTensorMap{E,S, N1, N2, T}}, t::T) where {E,S, N1, N2, T<:AbstractTensorMap{E,S, N1, N2}}
     return ParametrisedTensorMap(t)
 end
