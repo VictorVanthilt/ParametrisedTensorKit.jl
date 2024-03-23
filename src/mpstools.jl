@@ -1,8 +1,8 @@
 module MPSTools
 
-using MPSKit, MPSKitModels, TensorKit
+using MPSKit, MPSKitModels, TensorKit, ProgressBars
 
-export state_to_mps, get_compbasis_vector
+export state_to_mps, get_compbasis_vector, run_tdvp2, run_tempo, overlap
 
 """
 Turn a comp. basisstate into an MPS
@@ -24,6 +24,8 @@ function state_to_mps(states)
     return FiniteMPS([mps_state for mps_state in mps_states], normalize=true, overwrite=true)
 end
 
+state_to_mps(state, N::Int) = state_to_mps([state for _ in 1:N])
+
 """
 Get the computational basis vector from an MPS by interating over bitstrings
 """
@@ -44,5 +46,25 @@ function get_compbasis_vector(MPS::FiniteMPS)
     end
     return vector/norm(vector)
 end
+
+function run_tdvp2(ψ₀, H, t0, dt, tend)
+    ψ_tdvp = copy(ψ₀)
+    # first step
+    ψ_tdvp, envs = timestep(ψ₀, H, t0, dt, TDVP2())
+    for t in ProgressBar((t0+dt):dt:tend)
+        ψ_tdvp, envs = timestep!(ψ_tdvp, H, t, dt, TDVP2(), envs)
+    end
+    return ψ_tdvp
+end
+
+function run_tempo(ψ₀, O, t0, dt, tend)
+    ψ_tempo = copy(ψ₀)
+    for t in ProgressBar(t0:dt:tend)
+        ψ_tempo, _, _ = approximate(ψ_tempo, (O(t), ψ_tempo), DMRG2(verbose=false))
+    end
+    return ψ_tempo
+end
+
+overlap(ψ₁::MPSKit.AbstractMPS, ψ₂::MPSKit.AbstractMPS) = abs(dot(ψ₁, ψ₂))
 
 end
