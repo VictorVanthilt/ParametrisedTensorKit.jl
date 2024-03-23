@@ -1,6 +1,6 @@
 module ParametrisedTensorKit
 
-using MPSKit, TensorOperations, BlockTensorKit, TensorKit
+using MPSKit, TensorOperations, BlockTensorKit, TensorKit, LinearAlgebra
 
 export ParametrisedTensorMap
 

@@ -204,3 +204,8 @@ end
 function Base.convert(::Type{ParametrisedTensorMap{E,S, N1, N2, T}}, t::T) where {E,S, N1, N2, T<:AbstractTensorMap{E,S, N1, N2}}
     return ParametrisedTensorMap(t)
 end
+
+Base.eachindex(t::ParametrisedTensorMap) = eachindex(t.tensors)
+
+# very poor definition, supposed to only give an indication!
+LinearAlgebra.norm(t::ParametrisedTensorMap) = return mapreduce(norm, +, t.tensors)
