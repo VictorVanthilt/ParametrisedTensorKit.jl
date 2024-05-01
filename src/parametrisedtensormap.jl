@@ -1,23 +1,23 @@
 struct ParametrisedTensorMap{E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}} <: AbstractTensorMap{E,S,N1,N2}
     tensors::Vector{T}
-    coeffs::Vector{Union{Number, Function}}
+    coeffs::Vector{Union{Number,Function}}
 end
 
 # Constructors
 # ------------
 
-function ParametrisedTensorMap(tensor::T, coeff::C) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2},C<:Union{Number, Function}}
+function ParametrisedTensorMap(tensor::T, coeff::C) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2},C<:Union{Number,Function}}
     return ParametrisedTensorMap{E,S,N1,N2,T}([tensor], [coeff])
 end
 
-function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Union{<:Number, <:Function}}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
+function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Union{<:Number,<:Function}}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
     return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs)
 end
 
 function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{<:Any}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
     # check if the coeffs are only numbers and functions, then stuff them in a vector{number, function} if not, give error
-    if all(x -> x isa Union{Number, Function}, coeffs)
-        coeffVector = Vector{Union{Number, Function}}(coeffs)
+    if all(x -> x isa Union{Number,Function}, coeffs)
+        coeffVector = Vector{Union{Number,Function}}(coeffs)
         return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffVector)
     else
         throw(ArgumentError("coefficients must be a vector of numbers or functions (or a mix)"))
@@ -127,7 +127,7 @@ end
 # Multiplication methods
 # ----------------------
 function Base.:*(α::Number, t::ParametrisedTensorMap)
-    newcoeffs = Vector{Union{Number, Function}}(undef, length(t))
+    newcoeffs = Vector{Union{Number,Function}}(undef, length(t))
     for i in eachindex(t.coeffs)
         newcoeffs[i] = combinecoeff(α, t.coeffs[i])
     end
@@ -145,7 +145,7 @@ function Base.:*(f::Function, t::ParametrisedTensorMap)
     newcoeffs = map(t.coeffs) do x
         return combinecoeff(f, x)
     end
-    typeof(newcoeffs) == Vector{Union{Number, Function}} || convert(Vector{Union{Number, Function}}, newcoeffs)
+    typeof(newcoeffs) == Vector{Union{Number,Function}} || convert(Vector{Union{Number,Function}}, newcoeffs)
     return ParametrisedTensorMap(t.tensors, newcoeffs)
 end
 
@@ -179,7 +179,7 @@ function Base.:*(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
 
         for j in 1:length(t2)
             tempTens[j] = t1.tensors[i] * t2.tensors[j]
-            tempCoeffs[j] = combinecoeff(t1.coeffs[i],t2.coeffs[j])
+            tempCoeffs[j] = combinecoeff(t1.coeffs[i], t2.coeffs[j])
         end
 
         ptms[i] = ParametrisedTensorMap(tempTens, tempCoeffs)
@@ -201,7 +201,7 @@ function Base.convert(::Type{ParametrisedTensorMap}, t::AbstractTensorMap)
     return ParametrisedTensorMap(t)
 end
 
-function Base.convert(::Type{ParametrisedTensorMap{E,S, N1, N2, T}}, t::T) where {E,S, N1, N2, T<:AbstractTensorMap{E,S, N1, N2}}
+function Base.convert(::Type{ParametrisedTensorMap{E,S,N1,N2,T}}, t::T) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
     return ParametrisedTensorMap(t)
 end
 
