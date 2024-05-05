@@ -52,17 +52,26 @@ function TO.tensorcontract!(C::ParametrisedTensorMap, pAB::Index2Tuple,
                             α::Number, β::Number)
     C *= β
     C += α * tensorcontract!(C.tensors[1], pAB, A, pA, conjA, B, pB, conjB, 1, 0)
+    return C
 end
 
-# all ParametrisedTensorMaps
 function TO.tensorcontract!(C::ParametrisedTensorMap, pAB::Index2Tuple,
                             A::ParametrisedTensorMap, pA::Index2Tuple, conjA::Symbol,
                             B::ParametrisedTensorMap, pB::Index2Tuple, conjB::Symbol,
                             α::Number, β::Number)
     C *= β
     C += α * tensorcontract!(C.tensors[1], pAB, A, pA, conjA, B, pB, conjB, 1, 0)
+    return C
 end
 
+function TO.tensorcontract!(C::ParametrisedTensorMap, pAB::Index2Tuple,
+                            A::AbstractTensorMap, pA::Index2Tuple, conjA::Symbol,
+                            B::ParametrisedTensorMap, pB::Index2Tuple, conjB::Symbol,
+                            α::Number, β::Number)
+    C *= β
+    C += α * tensorcontract!(C.tensors[1], pAB, A, pA, conjA, B, pB, conjB, 1, 0)
+    return C
+end
 # Distributivity
 function TO.tensorcontract!(C::AbstractTensorMap, pAB::Index2Tuple,
                             A::ParametrisedTensorMap, pA::Index2Tuple, conjA::Symbol,
@@ -78,3 +87,24 @@ function TO.tensorcontract!(C::AbstractTensorMap, pAB::Index2Tuple,
 end
 
 TO.tensorfree!(t::ParametrisedTensorMap) = nothing
+
+# tensortrace
+function TO.tensortrace!(C::AbstractTensorMap, pC::Index2Tuple,
+    A::ParametrisedTensorMap, pA::Index2Tuple, conjA::Symbol,
+    α::Number, β::Number)
+    C *= β
+    C += tensortrace(pC, A, pA, conjA, α)
+    return C
+end
+
+function TO.tensortrace(pC::Index2Tuple, A::ParametrisedTensorMap,
+                        pA::Index2Tuple, conjA::Symbol, α::Number)
+
+    tensors = Vector{typeof(tensortrace(pC, A.tensors[1], pA, conjA, 1))}(undef, length(A)) # this is horrible
+    coeffs = Vector{Union{Number, Function}}(undef, length(A))
+    for i in eachindex(A)
+        tensors[i] = tensortrace(pC, A.tensors[i], pA, conjA, 1)
+        coeffs[i] = combinecoeff(α, A.coeffs[i])
+    end
+    return ParametrisedTensorMap(tensors, coeffs)
+end
