@@ -37,6 +37,32 @@ function TO.tensorcontract!(C::AbstractTensorMap, pAB::Index2Tuple,
     return ParametrisedTensorMap(newTens, newCoeff)
 end
 
+function TO.tensorcontract!(C::ParametrisedTensorMap, pAB::Index2Tuple,
+                            A::AbstractTensorMap, pA::Index2Tuple, conjA::Symbol,
+                            B::AbstractTensorMap, pB::Index2Tuple, conjB::Symbol,
+                            α::Number, β::Number)
+    C *= β
+    C += α * tensorcontract!(C.tensors[1], pAB, A, pA, conjA, B, pB, conjB, 1, 0)
+    return C
+end
+
+function TO.tensorcontract!(C::ParametrisedTensorMap, pAB::Index2Tuple,
+                            A::ParametrisedTensorMap, pA::Index2Tuple, conjA::Symbol,
+                            B::AbstractTensorMap, pB::Index2Tuple, conjB::Symbol,
+                            α::Number, β::Number)
+    C *= β
+    C += α * tensorcontract!(C.tensors[1], pAB, A, pA, conjA, B, pB, conjB, 1, 0)
+end
+
+# all ParametrisedTensorMaps
+function TO.tensorcontract!(C::ParametrisedTensorMap, pAB::Index2Tuple,
+                            A::ParametrisedTensorMap, pA::Index2Tuple, conjA::Symbol,
+                            B::ParametrisedTensorMap, pB::Index2Tuple, conjB::Symbol,
+                            α::Number, β::Number)
+    C *= β
+    C += α * tensorcontract!(C.tensors[1], pAB, A, pA, conjA, B, pB, conjB, 1, 0)
+end
+
 # Distributivity
 function TO.tensorcontract!(C::AbstractTensorMap, pAB::Index2Tuple,
                             A::ParametrisedTensorMap, pA::Index2Tuple, conjA::Symbol,
