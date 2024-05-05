@@ -10,9 +10,4 @@ TK.storagetype(::Type{<:ParametrisedTensorMap{E,S,N1,N2,T}}) where {E,S,N1,N2,T}
 
 TK.has_shared_permute(t::ParametrisedTensorMap, args...) = false
 
-function TK.similar(t::ParametrisedTensorMap, T::Type, P::TensorMapSpace)
-    tens = similar(t.tensors, T, P)
-    return ParametrisedTensorMap(tens)
-end
-
 # TK.storagetype(t::AbstractTensorMap) = Matrix{scalartype(t)}
