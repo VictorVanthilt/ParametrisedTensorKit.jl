@@ -48,6 +48,12 @@ end
 function Base.show(io::IO, ptm::ParametrisedTensorMap)
     subscript(i) = join(Char(0x2080 + d) for d in reverse!(digits(i)))
 
+    # if its empty, just print the type
+    if isempty(ptm.tensors)
+        print(io, "empty ParametrisedTensorMap{", eltype(ptm.tensors), "}")
+        return
+    end
+
     print(io, "ParametrisedTensorMap: ")
     for (i, tensor) in enumerate(ptm.tensors)
         if ptm.coeffs[i] isa Function
@@ -209,3 +215,8 @@ Base.eachindex(t::ParametrisedTensorMap) = eachindex(t.tensors)
 
 # very poor definition, supposed to only give an indication!
 LinearAlgebra.norm(t::ParametrisedTensorMap) = return mapreduce(norm, +, t.tensors)
+
+# copy!
+function Base.copy(t::ParametrisedTensorMap)
+    return ParametrisedTensorMap(copy(t.tensors), copy(t.coeffs))
+end
