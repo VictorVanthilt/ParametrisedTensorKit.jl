@@ -1,6 +1,5 @@
 # TensorOperations
 # ----------------
-
 function TO.tensorcontract!(C::AbstractTensorMap, pAB::Index2Tuple,
                             A::ParametrisedTensorMap, pA::Index2Tuple, conjA::Symbol,
                             B::AbstractTensorMap, pB::Index2Tuple, conjB::Symbol,
@@ -75,19 +74,19 @@ function TO.tensorcontract!(C::ParametrisedTensorMap, pAB::Index2Tuple,
     C += tensorcontract(pAB, A, pA, conjA, B, pB, conjB, α)
     return C
 end
+
 # Distributivity
 function TO.tensorcontract!(C::AbstractTensorMap, pAB::Index2Tuple,
                             A::ParametrisedTensorMap, pA::Index2Tuple, conjA::Symbol,
                             B::ParametrisedTensorMap, pB::Index2Tuple, conjB::Symbol,
                             α::Number, β::Number)
-    C_copy = copy(C)
     ptms = Vector{ParametrisedTensorMap}(undef, length(A))
 
     for i in eachindex(ptms)
         ptms[i] = A.coeffs[i] * tensorcontract(pAB, A.tensors[i], pA, conjA, B, pB, conjB, α)
 
     end
-    return β * C_copy + sum(ptms)
+    return β * C + sum(ptms)
 end
 
 TO.tensorfree!(t::ParametrisedTensorMap) = nothing
