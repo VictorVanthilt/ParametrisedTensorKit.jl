@@ -28,3 +28,11 @@ function VI.zerovector!(t::ParametrisedTensorMap)
     end
     return t
 end
+
+function VI.add!(ty::ParametrisedTensorMap, tx::AbstractTensorMap, α::Number)
+    ty += scale!(tx, α)
+end
+
+function VI.add!(ty::ParametrisedTensorMap, tx::ParametrisedTensorMap, α::Number)
+    ty += scale!(tx, α)
+end
