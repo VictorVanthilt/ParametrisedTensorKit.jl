@@ -102,12 +102,11 @@ end
 
 function TO.tensortrace(pC::Index2Tuple, A::ParametrisedTensorMap,
                         pA::Index2Tuple, conjA::Symbol, α::Number)
-
-    tensors = Vector{typeof(tensortrace(pC, A.tensors[1], pA, conjA, 1))}(undef, length(A)) # this is horrible
-    coeffs = Vector{Union{Number, Function}}(undef, length(A))
-    for i in eachindex(A)
-        tensors[i] = tensortrace(pC, A.tensors[i], pA, conjA, 1)
-        coeffs[i] = combinecoeff(α, A.coeffs[i])
+    tensors = map(A.tensors) do t
+        return tensortrace(pC, t, pA, conjA, 1)
+    end
+    coeffs = map(A.coeffs) do c
+        return combinecoeff(α, c)
     end
     return ParametrisedTensorMap(tensors, coeffs)
 end
