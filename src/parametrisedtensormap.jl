@@ -255,3 +255,13 @@ LinearAlgebra.norm(t::ParametrisedTensorMap) = return mapreduce(norm, +, t.tenso
 function Base.copy(t::ParametrisedTensorMap)
     return ParametrisedTensorMap(copy(t.tensors), copy(t.coeffs))
 end
+
+function delay(t::ParametrisedTensorMap, dt::Number)
+    return ParametrisedTensorMap(t.tensors, map(t.coeffs) do x
+        if x isa Function
+            return (t) -> x(t - dt)
+        else
+            return x
+        end
+    end)
+end

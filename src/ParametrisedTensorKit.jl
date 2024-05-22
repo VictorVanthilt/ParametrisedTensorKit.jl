@@ -2,7 +2,7 @@ module ParametrisedTensorKit
 
 using MPSKit, TensorOperations, BlockTensorKit, TensorKit, LinearAlgebra
 
-export ParametrisedTensorMap
+export ParametrisedTensorMap, delay
 
 import VectorInterface as VI
 import TensorOperations as TO
