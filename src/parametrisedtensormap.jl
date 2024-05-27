@@ -1,13 +1,33 @@
 struct ParametrisedTensorMap{E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}} <: AbstractTensorMap{E,S,N1,N2}
     tensors::Vector{T}
     coeffs::Vector{Union{Number,Function}}
+    function ParametrisedTensorMap{E,S,N1,N2,T}(tensors::Vector{T}, coeffs::Vector{Union{Number,Function}}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
+        # check if tensors are non zero
+        newtensors = similar(tensors, 0)
+        newcoeffs = similar(coeffs, 0)
+        for i in eachindex(tensors)
+            if norm(tensors[i]) > 1e-14
+                push!(newtensors, tensors[i])
+                push!(newcoeffs, coeffs[i])
+            end
+        end
+        if isempty(newtensors)
+            push!(newtensors, tensors[1])
+            push!(newcoeffs, 1)
+        end
+        return new{E,S,N1,N2,T}(newtensors, newcoeffs)
+    end
 end
 
 # Constructors
 # ------------
 
 function ParametrisedTensorMap(tensor::T, coeff::C) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2},C<:Union{Number,Function}}
-    return ParametrisedTensorMap{E,S,N1,N2,T}([tensor], [coeff])
+    tensorvec = Vector{T}(undef, 1)
+    coeffvec = Vector{Union{Number, Function}}(undef, 1)
+    tensorvec[1] = tensor
+    coeffvec[1] = coeff
+    return ParametrisedTensorMap{E,S,N1,N2,T}(tensorvec, coeffvec)
 end
 
 function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Union{<:Number,<:Function}}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
@@ -25,7 +45,7 @@ function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{<:Any}) where 
 end
 
 function ParametrisedTensorMap(tensor::T) where {T<:AbstractTensorMap}
-    return ParametrisedTensorMap([tensor], [1])
+    return ParametrisedTensorMap(tensor, 1)
 end
 
 function ParametrisedTensorMap(tensors::Vector{T}) where {T<:AbstractTensorMap}
@@ -139,7 +159,7 @@ function Base.:+(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
         end
     end
     if isempty(newtensors) # this should not happen
-        return ParametrisedTensorMap(zero(eltype(t1.tensors)))
+        return ParametrisedTensorMap(t1.tensors[1], 1)
     end
     return ParametrisedTensorMap(newtensors, newcoeffs)
 end
