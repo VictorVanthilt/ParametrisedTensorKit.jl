@@ -183,7 +183,26 @@ function Base.:+(t1::ParametrisedTensorMap, t2::AbstractTensorMap)
     return ParametrisedTensorMap(newtensors, newcoeffs)
 end
 
-Base.:+(t1::AbstractTensorMap, t2::ParametrisedTensorMap) = t2 + t1
+# Code duplication is necessary here
+# its prettier if the order of α's and f's corresponds to the order of the tensors in a sum
+function Base.:+(t1::AbstractTensorMap, t2::ParametrisedTensorMap)
+    newtensors = similar(t2.tensors, 0)
+    newcoeffs = similar(t2.coeffs, 0)
+    push!(newtensors, t1)
+    push!(newcoeffs, 1)
+    for i in eachindex(t2)
+        if t2.coeffs[i] isa Number
+            if !iszero(t2.coeffs[i]) && !iszero(t2.tensors[i])
+                push!(newtensors, t2.tensors[i])
+                push!(newcoeffs, t2.coeffs[i])
+            end
+        else
+            push!(newtensors, t2.tensors[i])
+            push!(newcoeffs, t2.coeffs[i])
+        end
+    end
+    return ParametrisedTensorMap(newtensors, newcoeffs)
+end
 
 # Multiplication methods
 # ----------------------
