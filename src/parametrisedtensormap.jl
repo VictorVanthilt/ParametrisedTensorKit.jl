@@ -6,14 +6,21 @@ struct ParametrisedTensorMap{E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}} <: Abstr
         newtensors = similar(tensors, 0)
         newcoeffs = similar(coeffs, 0)
         for i in eachindex(tensors)
-            if norm(tensors[i]) > 1e-14
-                push!(newtensors, tensors[i])
-                push!(newcoeffs, coeffs[i])
+            if coeffs[i] isa Number && !iszero(coeffs[i])
+                if norm(tensors[i]) > 1e-14
+                    push!(newtensors, tensors[i])
+                    push!(newcoeffs, coeffs[i])
+                end
+            else # coeff is a function
+                if norm(tensors[i]) > 1e-14
+                    push!(newtensors, tensors[i])
+                    push!(newcoeffs, coeffs[i])
+                end
             end
         end
-        if isempty(newtensors)
+        if isempty(newtensors) # have at least one tensor stored, even if it and/or its coeff are zero
             push!(newtensors, tensors[1])
-            push!(newcoeffs, 1)
+            push!(newcoeffs, 0)
         end
         return new{E,S,N1,N2,T}(newtensors, newcoeffs)
     end
@@ -90,7 +97,6 @@ function Base.show(io::IO, ptm::ParametrisedTensorMap)
     print(io, codomain(ptm.tensors[1]))
     print(io, " ← ")
     print(io, domain(ptm.tensors[1]))
-
 end
 
 # Parameter evaluation
@@ -133,74 +139,23 @@ end
 # Addition methods
 # ----------------
 function Base.:+(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
-    newtensors = similar(t1.tensors, 0)
-    newcoeffs = similar(t1.coeffs, 0)
-    for i in eachindex(t1)
-        if t1.coeffs[i] isa Number
-            if !iszero(t1.coeffs[i]) && !iszero(t1.tensors[i])
-                push!(newtensors, t1.tensors[i])
-                push!(newcoeffs, t1.coeffs[i])
-            end
-        else
-            push!(newtensors, t1.tensors[i])
-            push!(newcoeffs, t1.coeffs[i])
-        end
-    end
+    newtensors = vcat(t1.tensors, t2.tensors)
+    newcoeffs = vcat(t1.coeffs, t2.coeffs)
 
-    for i in eachindex(t2)
-        if t2.coeffs[i] isa Number
-            if !iszero(t2.coeffs[i]) && !iszero(t2.tensors[i])
-                push!(newtensors, t2.tensors[i])
-                push!(newcoeffs, t2.coeffs[i])
-            end
-        else
-            push!(newtensors, t2.tensors[i])
-            push!(newcoeffs, t2.coeffs[i])
-        end
-    end
-    if isempty(newtensors) # this should not happen
-        return ParametrisedTensorMap(t1.tensors[1], 1)
-    end
     return ParametrisedTensorMap(newtensors, newcoeffs)
 end
 
 function Base.:+(t1::ParametrisedTensorMap, t2::AbstractTensorMap)
-    newtensors = similar(t1.tensors, 0)
-    newcoeffs = similar(t1.coeffs, 0)
-    for i in eachindex(t1)
-        if t1.coeffs[i] isa Number
-            if !iszero(t1.coeffs[i]) && !iszero(t1.tensors[i])
-                push!(newtensors, t1.tensors[i])
-                push!(newcoeffs, t1.coeffs[i])
-            end
-        else
-            push!(newtensors, t1.tensors[i])
-            push!(newcoeffs, t1.coeffs[i])
-        end
-    end
-    push!(newtensors, t2)
-    push!(newcoeffs, 1)
+    newtensors = vcat(t1.tensors, t2)
+    newcoeffs = vcat(t1.coeffs, 1)
     return ParametrisedTensorMap(newtensors, newcoeffs)
 end
 
 # Code duplication is necessary here
-# its prettier if the order of α's and f's corresponds to the order of the tensors in a sum
+# it's prettier if the order of α's and f's corresponds to the order of the tensors in a sum
 function Base.:+(t1::AbstractTensorMap, t2::ParametrisedTensorMap)
-    newtensors = similar(t2.tensors, 0)
-    newcoeffs = similar(t2.coeffs, 0)
-    push!(newtensors, t1)
-    push!(newcoeffs, 1)
-    for i in eachindex(t2)
-        if t2.coeffs[i] isa Number
-            if !iszero(t2.coeffs[i]) && !iszero(t2.tensors[i])
-                push!(newtensors, t2.tensors[i])
-                push!(newcoeffs, t2.coeffs[i])
-            end
-        else
-            push!(newtensors, t2.tensors[i])
-            push!(newcoeffs, t2.coeffs[i])
-        end
-    end
+    newtensors = vcat(t1, t2.tensors)
+    newcoeffs = vcat(1, t2.coeffs)
     return ParametrisedTensorMap(newtensors, newcoeffs)
 end
 
