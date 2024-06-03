@@ -36,3 +36,5 @@ end
 function VI.add!(ty::ParametrisedTensorMap, tx::ParametrisedTensorMap, α::Number)
     ty += scale!(tx, α)
 end
+
+LinearAlgebra.norm(::VectorInterface.Zero) = VectorInterface.Zero()
