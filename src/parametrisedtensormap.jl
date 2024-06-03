@@ -7,12 +7,12 @@ struct ParametrisedTensorMap{E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}} <: Abstr
         newcoeffs = similar(coeffs, 0)
         for i in eachindex(tensors)
             if coeffs[i] isa Number && !iszero(coeffs[i])
-                if norm(tensors[i]) > 1e-14
+                if norm(tensors[i]) > eps(real(scalartype(tensors[i])))^(3 / 4)
                     push!(newtensors, tensors[i])
                     push!(newcoeffs, coeffs[i])
                 end
             else # coeff is a function
-                if norm(tensors[i]) > 1e-14
+                if norm(tensors[i]) > eps(real(scalartype(tensors[i])))^(3 / 4)
                     push!(newtensors, tensors[i])
                     push!(newcoeffs, coeffs[i])
                 end
