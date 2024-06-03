@@ -2,7 +2,7 @@ struct ParametrisedTensorMap{E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}} <: Abstr
     tensors::Vector{T}
     coeffs::Vector{Union{Number,Function}}
     function ParametrisedTensorMap{E,S,N1,N2,T}(tensors::Vector{T}, coeffs::Vector{Union{Number,Function}}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
-        # check if tensors are non zero
+        # check if tensors and coefficients are non zero
         newtensors = similar(tensors, 0)
         newcoeffs = similar(coeffs, 0)
         for i in eachindex(tensors)
@@ -19,7 +19,7 @@ struct ParametrisedTensorMap{E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}} <: Abstr
             end
         end
         if isempty(newtensors) # have at least one tensor stored, even if it and/or its coeff are zero
-            push!(newtensors, tensors[1])
+            push!(newtensors, zerovector(tensors[1]))
             push!(newcoeffs, 0)
         end
         return new{E,S,N1,N2,T}(newtensors, newcoeffs)
@@ -141,7 +141,6 @@ end
 function Base.:+(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
     newtensors = vcat(t1.tensors, t2.tensors)
     newcoeffs = vcat(t1.coeffs, t2.coeffs)
-
     return ParametrisedTensorMap(newtensors, newcoeffs)
 end
 
@@ -243,7 +242,17 @@ end
 Base.eachindex(t::ParametrisedTensorMap) = eachindex(t.tensors)
 
 # very poor definition, supposed to only give an indication!
-LinearAlgebra.norm(t::ParametrisedTensorMap) = return mapreduce(norm, +, t.tensors)
+function LinearAlgebra.norm(t::ParametrisedTensorMap)
+    nm = 0
+    for i in eachindex(t)
+        if t.coeffs[i] isa Number
+            nm += norm(t.coeffs[i]) * norm(t.tensors[i])
+        else
+            nm += norm(t.tensors[i])
+        end
+    end
+    return nm
+end
 
 # copy!
 function Base.copy(t::ParametrisedTensorMap)
