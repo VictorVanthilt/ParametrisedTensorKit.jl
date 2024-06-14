@@ -101,20 +101,20 @@ end
 
 # Parameter evaluation
 # --------------------
-function (T::ParametrisedTensorMap)(t::Number)
-    evaluated = Vector{typeof(T.tensors[1])}(undef, length(T.tensors))
-    for i in eachindex(T.tensors)
-        if typeof(T.coeffs[i]) <: Function
-            evaluated[i] = T.coeffs[i](t) * T.tensors[i]
+function (ptm::ParametrisedTensorMap)(t::Number)
+    evaluated = zerovector(ptm.tensors[1])
+    for i in eachindex(ptm)
+        if ptm.coeffs[i] isa Function
+            axpby!(ptm.coeffs[i](t), ptm.tensors[i], 1, evaluated)
         else
-            evaluated[i] = T.coeffs[i] * T.tensors[i]
+            axpby!(ptm.coeffs[i], ptm.tensors[i], 1, evaluated)
         end
     end
-    return sum(evaluated)
+    return evaluated
 end
 
-function eval_coeff(t::ParametrisedTensorMap, tval)
-    return t(tval)
+function eval_coeff(ptm::ParametrisedTensorMap, tval::Number)
+    return ptm(tval)
 end
 
 # Coefficient combination
