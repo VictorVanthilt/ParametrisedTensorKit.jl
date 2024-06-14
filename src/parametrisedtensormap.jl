@@ -215,14 +215,18 @@ function Base.:*(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
     return sum(ptms)
 end
 
-function adjoint(t::ParametrisedTensorMap)
-    t.tensors = map(t.tensors) do x
+function Base.adjoint(t::ParametrisedTensorMap)
+    newtensors = map(t.tensors) do x
         return adjoint(x)
     end
-    t.coeffs = map(t.coeffs) do x
-        return adjoint(x)
+    newcoeffs = map(t.coeffs) do x
+        if x isa Function
+            return (t) -> adjoint(x(t))
+        else
+            return adjoint(x)
+        end
     end
-    return t
+    return ParametrisedTensorMap(newtensors, newcoeffs)
 end
 
 function Base.convert(::Type{ParametrisedTensorMap}, t::AbstractTensorMap)
