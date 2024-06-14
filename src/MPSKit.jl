@@ -1,9 +1,9 @@
-const TIMEDOP = ParametrisedTensorMap
+const PTM = ParametrisedTensorMap
 
-function (H::MPOHamiltonian{T})(t) where {S,E<:Number,T<:BlockTensorMap{E,S,2,2}}
+function (H::MPOHamiltonian{T})(t) where {S,E<:Number,T<:BlockTensorMap{E,S,N₁,N₂}} where {N₁,N₂}
     return MPOHamiltonian(map(H.data) do x
-        new_subtensors = Dict(I => old_subtensor isa TIMEDOP ? eval_coeff(old_subtensor, t) : old_subtensor for (I, old_subtensor) in nonzero_pairs(x))
-        newx = BlockTensorMap{E,S,2,2}(undef, x.codom, x.dom)
+        new_subtensors = Dict(I => old_subtensor isa PTM ? eval_coeff(old_subtensor, t) : old_subtensor for (I, old_subtensor) in nonzero_pairs(x))
+        newx = BlockTensorMap{E,S,N₁,N₂}(undef, x.codom, x.dom)
         for (key, value) in new_subtensors
             newx[key] = value
         end
@@ -11,10 +11,10 @@ function (H::MPOHamiltonian{T})(t) where {S,E<:Number,T<:BlockTensorMap{E,S,2,2}
     end)
 end
 
-function (H::SparseMPO{T})(t) where {E<:Number,S,T<:BlockTensorMap{E,S,2,2}}
+function (H::SparseMPO{T})(t) where {E<:Number,S,T<:BlockTensorMap{E,S,N₁,N₂}} where {N₁,N₂}
     return InfiniteMPO(map(H.data) do x
-        new_subtensors = Dict(I => old_subtensor isa TIMEDOP ? eval_coeff(old_subtensor, t) : old_subtensor for (I, old_subtensor) in nonzero_pairs(x))
-        newx = BlockTensorMap{E,S,2,2}(undef, x.codom, x.dom)
+        new_subtensors = Dict(I => old_subtensor isa PTM ? eval_coeff(old_subtensor, t) : old_subtensor for (I, old_subtensor) in nonzero_pairs(x))
+        newx = BlockTensorMap{E,S,N₁,N₂}(undef, x.codom, x.dom)
         for (key, value) in new_subtensors
             newx[key] = value
         end
@@ -24,10 +24,10 @@ end
 
 MPSKit.ismpoidentity(::ParametrisedTensorMap) = false
 
-function delay(H::MPOHamiltonian{T}, dt::Number) where {E<:Number,S,T<:BlockTensorMap{E,S,2,2}}
+function delay(H::MPOHamiltonian{T}, dt::Number) where {E<:Number,S,T<:BlockTensorMap{E,S,N₁,N₂}} where {N₁,N₂}
     return MPOHamiltonian(map(H.data) do x
-        new_subtensors = Dict(I => old_subtensor isa TIMEDOP ? delay(old_subtensor, dt) : old_subtensor for (I, old_subtensor) in nonzero_pairs(x))
-        newx = BlockTensorMap{E,S,2,2}(undef, x.codom, x.dom)
+        new_subtensors = Dict(I => old_subtensor isa PTM ? delay(old_subtensor, dt) : old_subtensor for (I, old_subtensor) in nonzero_pairs(x))
+        newx = BlockTensorMap{E,S,N₁,N₂}(undef, x.codom, x.dom)
         for (key, value) in new_subtensors
             newx[key] = value
         end
@@ -35,10 +35,10 @@ function delay(H::MPOHamiltonian{T}, dt::Number) where {E<:Number,S,T<:BlockTens
     end)
 end
 
-function delay(H::SparseMPO{T}, dt::Number) where {E<:Number,S,T<:BlockTensorMap{E,S,2,2}}
+function delay(H::SparseMPO{T}, dt::Number) where {E<:Number,S,T<:BlockTensorMap{E,S,N₁,N₂}} where {N₁,N₂}
     return InfiniteMPO(map(H.data) do x
-        new_subtensors = Dict(I => old_subtensor isa TIMEDOP ? delay(old_subtensor, dt) : old_subtensor for (I, old_subtensor) in nonzero_pairs(x))
-        newx = BlockTensorMap{E,S,2,2}(undef, x.codom, x.dom)
+        new_subtensors = Dict(I => old_subtensor isa PTM ? delay(old_subtensor, dt) : old_subtensor for (I, old_subtensor) in nonzero_pairs(x))
+        newx = BlockTensorMap{E,S,N₁,N₂}(undef, x.codom, x.dom)
         for (key, value) in new_subtensors
             newx[key] = value
         end
