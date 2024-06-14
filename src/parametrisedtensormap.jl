@@ -75,14 +75,8 @@ end
 function Base.show(io::IO, ptm::ParametrisedTensorMap)
     subscript(i) = join(Char(0x2080 + d) for d in reverse!(digits(i)))
 
-    # if its empty, just print the type
-    if isempty(ptm.tensors)
-        print(io, "empty ParametrisedTensorMap{", eltype(ptm.tensors), "}")
-        return
-    end
-
     print(io, "ParametrisedTensorMap: ")
-    for (i, tensor) in enumerate(ptm.tensors)
+    for i in eachindex(ptm)
         if ptm.coeffs[i] isa Function
             print(io, "f", subscript(i))
         else
