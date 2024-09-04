@@ -1,18 +1,22 @@
 struct ParametrisedTensorMap{E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}} <: AbstractTensorMap{E,S,N1,N2}
     tensors::Vector{T}
     coeffs::Vector{Union{Number,Function}}
+    has_constant::Bool
     function ParametrisedTensorMap{E,S,N1,N2,T}(tensors::Vector{T}, coeffs::Vector{Union{Number,Function}}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
-        # check if tensors and coefficients are non zero
         newtensors = similar(tensors, 0)
         newcoeffs = similar(coeffs, 0)
+        has_constant = false
         for i in eachindex(tensors)
-            if coeffs[i] isa Number && !iszero(coeffs[i])
-                if norm(tensors[i]) > eps(real(scalartype(tensors[i])))^(3 / 4)
-                    push!(newtensors, tensors[i])
-                    push!(newcoeffs, coeffs[i])
-                end
-            else # coeff is a function
-                if norm(tensors[i]) > eps(real(scalartype(tensors[i])))^(3 / 4)
+            if norm(tensors[i]) > eps(real(scalartype(tensors[i])))^(3 / 4) # Check if it is worth to store the tensor
+                if coeffs[i] isa Number && !iszero(coeffs[i]) # Insert constant multplied tensors at the front or add them to existing constant tensor
+                    if has_constant
+                        newtensors[1] += coeffs[i] * tensors[i]
+                    else
+                        insert!(newtensors, 1, coeffs[i] * tensors[i])
+                        insert!(newcoeffs, 1, 1)
+                        has_constant = true
+                    end
+                else # Coeff is a function and thus needs to be stored independently
                     push!(newtensors, tensors[i])
                     push!(newcoeffs, coeffs[i])
                 end
@@ -22,7 +26,7 @@ struct ParametrisedTensorMap{E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}} <: Abstr
             push!(newtensors, zerovector(tensors[1]))
             push!(newcoeffs, 0)
         end
-        return new{E,S,N1,N2,T}(newtensors, newcoeffs)
+        return new{E,S,N1,N2,T}(newtensors, newcoeffs, has_constant)
     end
 end
 
@@ -31,7 +35,7 @@ end
 
 function ParametrisedTensorMap(tensor::T, coeff::C) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2},C<:Union{Number,Function}}
     tensorvec = Vector{T}(undef, 1)
-    coeffvec = Vector{Union{Number, Function}}(undef, 1)
+    coeffvec = Vector{Union{Number,Function}}(undef, 1)
     tensorvec[1] = tensor
     coeffvec[1] = coeff
     return ParametrisedTensorMap{E,S,N1,N2,T}(tensorvec, coeffvec)
