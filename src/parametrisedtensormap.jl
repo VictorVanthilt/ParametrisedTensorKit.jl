@@ -56,6 +56,9 @@ function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{<:Any}) where 
 end
 
 function ParametrisedTensorMap(tensor::T) where {T<:AbstractTensorMap}
+    if tensor isa ParametrisedTensorMap
+        return tensor
+    end
     return ParametrisedTensorMap(tensor, 1)
 end
 
