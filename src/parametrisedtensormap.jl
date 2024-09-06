@@ -148,22 +148,26 @@ function Base.:+(t1::ParametrisedTensorMap, t2::AbstractTensorMap)
     return ParametrisedTensorMap(newtensors, newcoeffs)
 end
 
+Base.:+(t1::AbstractTensorMap, t2::ParametrisedTensorMap) = t2 + t1
+
 # Multiplication methods
 # ----------------------
-function Base.:*(α::Number, t::ParametrisedTensorMap)
-    newcoeffs = Vector{Union{Number,Function}}(undef, length(t))
-    for i in eachindex(t.coeffs)
-        newcoeffs[i] = combinecoeff(α, t.coeffs[i])
-    end
-    return ParametrisedTensorMap(t.tensors, newcoeffs)
-end
+# function Base.:*(α::Number, t::ParametrisedTensorMap)
+#     newcoeffs = Vector{Union{Number,Function}}(undef, length(t))
+#     for i in eachindex(t.coeffs)
+#         newcoeffs[i] = combinecoeff(α, t.coeffs[i])
+#     end
+#     return ParametrisedTensorMap(t.tensors, newcoeffs)
+# end
 
-function Base.:*(t::ParametrisedTensorMap, α::Number)
+function Base.:*(α::Number, t::ParametrisedTensorMap)
     newcoeffs = map(t.coeffs) do x
         return combinecoeff(x, α)
     end
     return ParametrisedTensorMap(t.tensors, newcoeffs)
 end
+
+Base.:*(t::ParametrisedTensorMap, α::Number) = α*t
 
 function Base.:*(f::Function, t::ParametrisedTensorMap)
     newcoeffs = map(t.coeffs) do x
