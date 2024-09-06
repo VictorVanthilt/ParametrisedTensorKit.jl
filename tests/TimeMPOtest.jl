@@ -11,5 +11,7 @@ Lat = FiniteChain(N)
 
 H = @mpoham (f*σᶻ()){Lat[1]} + (g*σˣ()){Lat[1]}
 
+H = transverse_field_ising()
+
 time_mpo = make_time_mpo(H, 0.1, WI)
 
