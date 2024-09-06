@@ -148,14 +148,6 @@ function Base.:+(t1::ParametrisedTensorMap, t2::AbstractTensorMap)
     return ParametrisedTensorMap(newtensors, newcoeffs)
 end
 
-# Code duplication is necessary here
-# it's prettier if the order of α's and f's corresponds to the order of the tensors in a sum
-# function Base.:+(t1::AbstractTensorMap, t2::ParametrisedTensorMap)
-#     newtensors = vcat(t1, t2.tensors)
-#     newcoeffs = vcat(1, t2.coeffs)
-#     return ParametrisedTensorMap(newtensors, newcoeffs)
-# end
-
 # Multiplication methods
 # ----------------------
 function Base.:*(α::Number, t::ParametrisedTensorMap)
