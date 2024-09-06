@@ -150,11 +150,11 @@ end
 
 # Code duplication is necessary here
 # it's prettier if the order of α's and f's corresponds to the order of the tensors in a sum
-function Base.:+(t1::AbstractTensorMap, t2::ParametrisedTensorMap)
-    newtensors = vcat(t1, t2.tensors)
-    newcoeffs = vcat(1, t2.coeffs)
-    return ParametrisedTensorMap(newtensors, newcoeffs)
-end
+# function Base.:+(t1::AbstractTensorMap, t2::ParametrisedTensorMap)
+#     newtensors = vcat(t1, t2.tensors)
+#     newcoeffs = vcat(1, t2.coeffs)
+#     return ParametrisedTensorMap(newtensors, newcoeffs)
+# end
 
 # Multiplication methods
 # ----------------------
@@ -261,6 +261,7 @@ function Base.copy(t::ParametrisedTensorMap)
     return ParametrisedTensorMap(copy(t.tensors), copy(t.coeffs))
 end
 
+# Delay the coefficients of a ParametrisedTensorMap, going back in time by dt
 function delay(t::ParametrisedTensorMap, dt::Number)
     return ParametrisedTensorMap(t.tensors, map(t.coeffs) do x
         if x isa Function
