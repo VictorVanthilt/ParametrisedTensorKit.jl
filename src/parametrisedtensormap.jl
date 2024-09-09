@@ -193,23 +193,6 @@ function Base.:*(t1::ParametrisedTensorMap, t2::AbstractTensorMap)
     return ParametrisedTensorMap(newtensors, t1.coeffs)
 end
 
-# function Base.:*(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
-#     ptms = Vector{ParametrisedTensorMap}(undef, length(t1))
-
-#     for i in 1:length(t1)
-#         tempTens = similar(t2.tensors, length(t2))
-#         tempCoeffs = similar(t2.coeffs, length(t2))
-
-#         for j in 1:length(t2)
-#             tempTens[j] = t1.tensors[i] * t2.tensors[j]
-#             tempCoeffs[j] = combinecoeff(t1.coeffs[i], t2.coeffs[j])
-#         end
-
-#         ptms[i] = ParametrisedTensorMap(tempTens, tempCoeffs)
-#     end
-#     return sum(ptms)
-# end
-
 function Base.:*(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
     newtensors = similar(t1.tensors, length(t1) * length(t2))
     newcoeffs = Vector{Union{Number,Function}}(undef, length(t1) * length(t2))
