@@ -19,18 +19,18 @@ gσᶻ(0)
 # adding a bunch of constant tensors
 σᶻ() + fσˣ + σᶻ() + gσᶻ + σᶻ() + fσˣ + gσᶻ + 0 * σʸ() + fσˣ(0)
 
-
 # multiplying two ptms
 
 2 * fσˣ
+2 * fσˣ * 3
 (fσˣ + gσᶻ) * (fσˣ + gσᶻ)
-
+T = fσˣ + gσᶻ + fσˣ + gσᶻ + fσˣ + gσᶻ + fσˣ + gσᶻ + fσˣ + gσᶻ
 # adding ptms
 
 ptm = σᶻ() + fσˣ + gσᶻ + 0 * σʸ() + fσˣ(0)
 ptm(π)
 
-zer = ParametrisedTensorMap(σᶻ(), 0)
+zer = ParametrisedTensorMap(σᶻ(), 1)
 
 Λ = FiniteChain(2)
 H = @mpoham ((σˣ() + gσᶻ){Λ[1]} + gσᶻ{Λ[2]})
