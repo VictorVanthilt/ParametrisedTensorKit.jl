@@ -1,7 +1,6 @@
 struct ParametrisedTensorMap{E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}} <: AbstractTensorMap{E,S,N1,N2}
     tensors::Vector{T}
     coeffs::Vector{Union{Number,Function}}
-    has_constant::Bool
     function ParametrisedTensorMap{E,S,N1,N2,T}(tensors::Vector{T}, coeffs::Vector{Union{Number,Function}}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
         newtensors = similar(tensors, 0)
         newcoeffs = similar(coeffs, 0)
@@ -26,8 +25,16 @@ struct ParametrisedTensorMap{E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}} <: Abstr
             push!(newtensors, zerovector(tensors[1]))
             push!(newcoeffs, 0)
         end
-        return new{E,S,N1,N2,T}(newtensors, newcoeffs, has_constant)
+        return new{E,S,N1,N2,T}(newtensors, newcoeffs)
     end
+end
+
+# use getproperty to check if the PTM has a constant tensor instead of storing a bool as a field
+function Base.getproperty(t::ParametrisedTensorMap, prop::Symbol)
+    if prop == :has_constant
+        return t.coeffs[1] isa Number
+    end
+    return getfield(t, prop)
 end
 
 # Constructors
