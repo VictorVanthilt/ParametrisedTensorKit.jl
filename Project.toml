@@ -1,3 +1,8 @@
+name = "ParametrisedTensorKit"
+uuid = "b422ef2b-70dc-4eea-b5db-a3ef108ead84"
+authors = ["Victor <victor.vanthilt@gmail.com>"]
+version = "0.1.0"
+
 [deps]
 AllocationKit = "44cee6ac-cc62-4d77-a2ad-0dd48dabd6ef"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
