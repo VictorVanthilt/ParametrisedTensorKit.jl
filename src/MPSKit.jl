@@ -22,7 +22,7 @@ function (H::SparseMPO{T})(t) where {E<:Number,S,T<:BlockTensorMap{E,S,N₁,N₂
     end)
 end
 
-MPSKit.ismpoidentity(::ParametrisedTensorMap) = false
+# MPSKit.ismpoidentity(::ParametrisedTensorMap) = false
 
 function delay(H::MPOHamiltonian{T}, dt::Number) where {E<:Number,S,T<:BlockTensorMap{E,S,N₁,N₂}} where {N₁,N₂}
     return MPOHamiltonian(map(H.data) do x
