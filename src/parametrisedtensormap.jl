@@ -102,9 +102,7 @@ function Base.show(io::IO, ptm::ParametrisedTensorMap)
         end
     end
     print(io, " | ")
-    print(io, codomain(ptm.tensors[1]))
-    print(io, " ← ")
-    print(io, domain(ptm.tensors[1]))
+    print(io, space(ptm))
 end
 
 # Parameter evaluation
