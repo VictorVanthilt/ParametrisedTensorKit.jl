@@ -89,7 +89,12 @@ function TO.tensorcontract!(C::AbstractTensorMap, pAB::Index2Tuple,
     return β * C + sum(ptms)
 end
 
-TO.tensorfree!(t::ParametrisedTensorMap) = nothing
+function TO.tensorfree!(t::ParametrisedTensorMap, args...)
+    for tensor in t.tensors
+        tensorfree!(tensor, args...)
+    end
+    return nothing
+end
 
 # tensortrace
 function TO.tensortrace!(C::AbstractTensorMap, pC::Index2Tuple,
