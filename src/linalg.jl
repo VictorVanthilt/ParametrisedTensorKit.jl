@@ -20,7 +20,7 @@ function LinearAlgebra.mul!(tC::TrivialTensorMap, tA::ParametrisedTensorMap, tB:
     return tC
 end
 
-function LinearAlgebra.mul!(tC::TrivialTensorMap, tA::ParametrisedTensorMap, tB::ParametrisedTensorMap, α::Bool, β::Bool) # distributiviteit!
+function LinearAlgebra.mul!(tC::TrivialTensorMap, tA::ParametrisedTensorMap, tB::ParametrisedTensorMap, α::Bool, β::Bool)
     newtensors = similar(Vector{typeof(tC)}, length(tA) * length(tB))
     newcoeffs = Vector{Union{Number,Function}}(undef, length(tA) * length(tB))
     for i in eachindex(tA)
