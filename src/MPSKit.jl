@@ -1,24 +1,14 @@
 const PTM = ParametrisedTensorMap
 
-function (H::MPOHamiltonian{T})(t) where {S,E<:Number,T<:BlockTensorMap{E,S,N₁,N₂}} where {N₁,N₂}
-    return MPOHamiltonian(map(H.data) do x
-        new_subtensors = Dict(I => old_subtensor isa PTM ? eval_coeff(old_subtensor, t) : old_subtensor for (I, old_subtensor) in nonzero_pairs(x))
-        newx = BlockTensorMap{E,S,N₁,N₂}(undef, x.codom, x.dom)
-        for (key, value) in new_subtensors
-            newx[key] = value
-        end
-        return newx
+function (H::MPOHamiltonian{T})(t) where {TT, T<:SparseBlockTensorMap{TT}}
+    return MPOHamiltonian(map(parent(H)) do x
+        return SparseBlockTensorMap{TT}(Dict(I => X isa PTM ? X(t) : X for (I, X) in nonzero_pairs(x)), codomain(x), domain(x))
     end)
 end
 
-function (H::SparseMPO{T})(t) where {E<:Number,S,T<:BlockTensorMap{E,S,N₁,N₂}} where {N₁,N₂}
-    return InfiniteMPO(map(H.data) do x
-        new_subtensors = Dict(I => old_subtensor isa PTM ? eval_coeff(old_subtensor, t) : old_subtensor for (I, old_subtensor) in nonzero_pairs(x))
-        newx = BlockTensorMap{E,S,N₁,N₂}(undef, x.codom, x.dom)
-        for (key, value) in new_subtensors
-            newx[key] = value
-        end
-        return newx
+function (O::MPO{T})(t) where {TT, T<:SparseBlockTensorMap{TT}}
+    return MPO(map(parent(O)) do x
+        return SparseBlockTensorMap{TT}(Dict(I => X isa PTM ? X(t) : X for (I, X) in nonzero_pairs(x)), codomain(x), domain(x))
     end)
 end
 
