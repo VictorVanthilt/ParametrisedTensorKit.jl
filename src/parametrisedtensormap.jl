@@ -112,11 +112,11 @@ function (ptm::ParametrisedTensorMap)(t::Number)
     for i in eachindex(ptm)
         axpby!(eval_coeff(ptm.coeffs[i], t), ptm.tensors[i], 1, evaluated)
     end
-    
+
     return evaluated
 end
 
-function eval_coeff(F::Union{Number, Function}, t::Number)
+function eval_coeff(F::Union{Number,Function}, t::Number)
     return F isa Number ? F : F(t)
 end
 
@@ -168,7 +168,7 @@ function Base.:*(α::Number, t::ParametrisedTensorMap)
     return ParametrisedTensorMap(t.tensors, newcoeffs)
 end
 
-Base.:*(t::ParametrisedTensorMap, α::Number) = α*t
+Base.:*(t::ParametrisedTensorMap, α::Number) = α * t
 
 function Base.:*(f::Function, t::ParametrisedTensorMap)
     newcoeffs = map(t.coeffs) do x
