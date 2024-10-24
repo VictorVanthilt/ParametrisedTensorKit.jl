@@ -110,17 +110,18 @@ end
 function (ptm::ParametrisedTensorMap)(t::Number)
     evaluated = zerovector(ptm.tensors[1])
     for i in eachindex(ptm)
-        if ptm.coeffs[i] isa Function
-            axpby!(ptm.coeffs[i](t), ptm.tensors[i], 1, evaluated)
-        else
-            axpby!(ptm.coeffs[i], ptm.tensors[i], 1, evaluated)
-        end
+        axpby!(eval_coeff(ptm.coeffs[i], t), ptm.tensors[i], 1, evaluated)
     end
+    
     return evaluated
 end
 
-function eval_coeff(ptm::ParametrisedTensorMap, tval::Number)
-    return ptm(tval)
+function eval_coeff(F::Union{Number, Function}, t::Number)
+    return F isa Number ? F : F(t)
+end
+
+function eval_coeffs(ptm::ParametrisedTensorMap, t::Number)
+    return ptm(t)
 end
 
 # Coefficient combination
