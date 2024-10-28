@@ -10,7 +10,7 @@ TK.storagetype(::Type{<:ParametrisedTensorMap{E,S,N1,N2,T}}) where {E,S,N1,N2,T}
 
 TK.has_shared_permute(t::ParametrisedTensorMap, args...) = false
 
-function TK.add_transform!(tdst::TrivialTensorMap{T,S,N₁,N₂},
+function TK.add_transform!(tdst::TensorMap{T,S,N₁,N₂},
     tsrc::ParametrisedTensorMap,
     (p₁, p₂)::Index2Tuple{N₁,N₂},
     fusiontreetransform,

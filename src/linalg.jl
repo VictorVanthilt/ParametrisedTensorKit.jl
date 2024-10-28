@@ -1,4 +1,4 @@
-function LinearAlgebra.mul!(tC::TrivialTensorMap, tA::TrivialTensorMap, tB::ParametrisedTensorMap, α::Bool, β::Bool)
+function LinearAlgebra.mul!(tC::TensorMap, tA::TensorMap, tB::ParametrisedTensorMap, α::Bool, β::Bool)
     coeffs = copy(tB.coeffs)
     tensors = map(tB.tensors) do t
         t′ = similar(tC)
@@ -9,7 +9,7 @@ function LinearAlgebra.mul!(tC::TrivialTensorMap, tA::TrivialTensorMap, tB::Para
     return tC
 end
 
-function LinearAlgebra.mul!(tC::TrivialTensorMap, tA::ParametrisedTensorMap, tB::TrivialTensorMap, α::Bool, β::Bool)
+function LinearAlgebra.mul!(tC::TensorMap, tA::ParametrisedTensorMap, tB::TensorMap, α::Bool, β::Bool)
     coeffs = copy(tA.coeffs)
     tensors = map(tA.tensors) do t
         t′ = similar(tC)
@@ -20,7 +20,7 @@ function LinearAlgebra.mul!(tC::TrivialTensorMap, tA::ParametrisedTensorMap, tB:
     return tC
 end
 
-function LinearAlgebra.mul!(tC::TrivialTensorMap, tA::ParametrisedTensorMap, tB::ParametrisedTensorMap, α::Bool, β::Bool)
+function LinearAlgebra.mul!(tC::TensorMap, tA::ParametrisedTensorMap, tB::ParametrisedTensorMap, α::Bool, β::Bool)
     newtensors = similar(Vector{typeof(tC)}, length(tA) * length(tB))
     newcoeffs = Vector{Union{Number,Function}}(undef, length(tA) * length(tB))
     for i in eachindex(tA)
