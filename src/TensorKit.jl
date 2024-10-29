@@ -32,4 +32,6 @@ function TK._add_trivial_kernel!(tdst::ParametrisedTensorMap, tsrc::Parametrised
     return nothing
 end
 
+TK.space(t::ParametrisedTensorMap) = space(t.tensors[1]) 
+
 # TK.storagetype(t::AbstractTensorMap) = Matrix{scalartype(t)}
