@@ -33,3 +33,17 @@ function LinearAlgebra.mul!(tC::TensorMap, tA::ParametrisedTensorMap, tB::Parame
     tC = ParametrisedTensorMap(newtensors, newcoeffs)
     return tC
 end
+
+function LinearAlgebra.mul!(tC::ParametrisedTensorMap, tA::ParametrisedTensorMap, tB::ParametrisedTensorMap, α, β)
+    newtensors = similar(Vector{typeof(tC)}, length(tA) * length(tB))
+    newcoeffs = Vector{Union{Number,Function}}(undef, length(tA) * length(tB))
+    for i in eachindex(tA)
+        for j in eachindex(tB)
+            index = (i - 1) * length(tB) + j
+            newtensors[index] = tA.tensors[i] * tB.tensors[j]
+            newcoeffs[index] = combinecoeff(combinecoeff(tA.coeffs[i], tB.coeffs[j]), α)
+        end
+    end
+    tC = β*tC + ParametrisedTensorMap(newtensors, newcoeffs)
+    return tC
+end
