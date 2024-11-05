@@ -251,6 +251,9 @@ end
 
 Base.eachindex(t::ParametrisedTensorMap) = eachindex(t.tensors)
 
+function Base.similar(t::ParametrisedTensorMap)
+    return ParametrisedTensorMap{scalartype(t)}(undef, space(t))
+end
 function Base.similar(t::ParametrisedTensorMap, TMS::TensorMapSpace)
     return ParametrisedTensorMap{scalartype(t)}(undef, TMS)
 end
