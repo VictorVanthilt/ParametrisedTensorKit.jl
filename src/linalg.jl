@@ -47,3 +47,7 @@ function LinearAlgebra.mul!(tC::ParametrisedTensorMap, tA::ParametrisedTensorMap
     tC = β*tC + ParametrisedTensorMap(newtensors, newcoeffs)
     return tC
 end
+
+function LinearAlgebra.mul!(tC::ParametrisedTensorMap, tA::ParametrisedTensorMap, tB::AbstractTensorMap, α, β)
+    return tC = β*tC + α * tA * tB
+end
