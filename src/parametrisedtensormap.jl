@@ -73,6 +73,21 @@ function ParametrisedTensorMap(tensors::Vector{T}) where {T<:AbstractTensorMap}
     return ParametrisedTensorMap(tensors, fill(1, length(tensors)))
 end
 
+function ParametrisedTensorMap{E}(::UndefInitializer, TMS::TensorMapSpace) where E
+    N2 = numin(TMS)
+    N1 = numout(TMS)
+    S = spacetype(TMS)
+    T = TensorMap{E,S,N1,N2,Vector{E}}
+    
+    tensors = Vector{T}(undef, 1)
+    tensors[1] = zeros(E, TMS)
+
+    coeffs = Vector{Union{Number,Function}}(undef, 1)
+    coeffs[1] = 0
+
+    return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs)
+end
+
 Base.length(t::ParametrisedTensorMap) = length(t.tensors)
 
 # Construct by multiplying coefficient function
