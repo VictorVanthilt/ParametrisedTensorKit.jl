@@ -10,7 +10,8 @@ function VI.scale!(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number)
     for i in eachindex(tx.coeffs)
         newCoeffs[i] = combinecoeff(tx.coeffs[i], α)
     end
-    return ParametrisedTensorMap(newTens, newCoeffs)
+    ty = ParametrisedTensorMap(newTens, newCoeffs)
+    return ty
 end
 
 VI.scale!(t::ParametrisedTensorMap, α::Number) = α * t
