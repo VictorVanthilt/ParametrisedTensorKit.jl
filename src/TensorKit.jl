@@ -17,8 +17,14 @@ function TK.add_transform!(tdst::TensorMap{T,S,N₁,N₂},
     α::Number,
     β::Number,
     backend::AbstractBackend...) where {T,S,N₁,N₂}
-    tdst = ParametrisedTensorMap(zerovector(tdst)) # convert the destination to a PTM
-    return TK.add_transform!(tdst, tsrc, (p₁, p₂), fusiontreetransform, α, β, backend...)
+
+    newtensors = map(tsrc.tensors) do t
+        t′ = similar(tdst)
+        TK.add_transform!(t′, t, (p₁, p₂), fusiontreetransform, α, β, backend...)
+        return t′
+    end
+    tdst = ParametrisedTensorMap(newtensors, tsrc.coeffs)
+    return tdst
 end
 
 function TK.add_transform!(tdst::ParametrisedTensorMap{E,S,N₁,N₂},
@@ -33,7 +39,8 @@ function TK.add_transform!(tdst::ParametrisedTensorMap{E,S,N₁,N₂},
         TK.add_transform!(t′, t, (p₁, p₂), fusiontreetransform, α, β, backend...)
         return t′
     end
-    return ParametrisedTensorMap(newtensors, tsrc.coeffs)
+    tdst = ParametrisedTensorMap(newtensors, tsrc.coeffs)
+    return tdst
 end
 
 function TK._add_trivial_kernel!(tdst::ParametrisedTensorMap, tsrc::ParametrisedTensorMap, (p₁, p₂), fusiontreetransform, α, β, backend...)
