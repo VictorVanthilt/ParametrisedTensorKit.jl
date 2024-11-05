@@ -38,3 +38,6 @@ function VI.add!(ty::ParametrisedTensorMap, tx::ParametrisedTensorMap, α::Numbe
 end
 
 LinearAlgebra.norm(::VectorInterface.Zero) = VectorInterface.Zero()
+
+VI.scalartype(t::ParametrisedTensorMap{E}) where E = E
+VI.scalartype(TT::Type{<:ParametrisedTensorMap{E}}) where E = E
