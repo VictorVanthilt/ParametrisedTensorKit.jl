@@ -251,6 +251,10 @@ end
 
 Base.eachindex(t::ParametrisedTensorMap) = eachindex(t.tensors)
 
+function Base.similar(t::ParametrisedTensorMap, TMS::TensorMapSpace)
+    return ParametrisedTensorMap{scalartype(t)}(undef, TMS)
+end
+
 # very poor definition, supposed to only give an indication!
 function LinearAlgebra.norm(t::ParametrisedTensorMap)
     nm = 0
