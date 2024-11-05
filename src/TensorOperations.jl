@@ -89,6 +89,18 @@ function TO.tensorcontract!(C::AbstractTensorMap, pAB::Index2Tuple,
     return β * C + sum(ptms)
 end
 
+function TO.tensorcontract_type(TC, A::ParametrisedTensorMap, pA::Index2Tuple, conjA::Bool,
+                                B::AbstractTensorMap, pB::Index2Tuple, conjB::Bool,
+                                pAB::Index2Tuple)
+    return ParametrisedTensorMap{TC}
+end
+
+function TO.tensorcontract_type(TC, A::AbstractTensorMap, pA::Index2Tuple, conjA::Bool,
+                                B::ParametrisedTensorMap, pB::Index2Tuple, conjB::Bool,
+                                pAB::Index2Tuple)
+    return ParametrisedTensorMap{TC}
+end
+
 function TO.tensorfree!(t::ParametrisedTensorMap, args...)
     for tensor in t.tensors
         tensorfree!(tensor, args...)
