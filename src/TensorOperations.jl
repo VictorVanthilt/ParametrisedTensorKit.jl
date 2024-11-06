@@ -15,7 +15,8 @@ function TO.tensorcontract!(C::AbstractTensorMap, pAB::Index2Tuple,
         newTens[i+1] = tensorcontract(pAB, A.tensors[i], pA, conjA, B, pB, conjB, 1)
         newCoeff[i+1] = combinecoeff(α, A.coeffs[i])
     end
-    return ParametrisedTensorMap(newTens, newCoeff)
+    C = ParametrisedTensorMap(newTens, newCoeff)
+    return C
 end
 
 function TO.tensorcontract!(C::AbstractTensorMap, pAB::Index2Tuple,
@@ -33,7 +34,8 @@ function TO.tensorcontract!(C::AbstractTensorMap, pAB::Index2Tuple,
         newTens[i+1] = tensorcontract(pAB, A, pA, conjA, B.tensors[i], pB, conjB, 1)
         newCoeff[i+1] = combinecoeff(α, B.coeffs[i])
     end
-    return ParametrisedTensorMap(newTens, newCoeff)
+    C = ParametrisedTensorMap(newTens, newCoeff)
+    return C
 end
 
 function TO.tensorcontract!(C::ParametrisedTensorMap, pAB::Index2Tuple,
@@ -86,7 +88,8 @@ function TO.tensorcontract!(C::AbstractTensorMap, pAB::Index2Tuple,
         ptms[i] = A.coeffs[i] * tensorcontract(pAB, A.tensors[i], pA, conjA, B, pB, conjB, α)
 
     end
-    return β * C + sum(ptms)
+    C = β * C + sum(ptms)
+    return C
 end
 
 function TO.tensorcontract_type(TC, A::ParametrisedTensorMap, pA::Index2Tuple, conjA::Bool,
