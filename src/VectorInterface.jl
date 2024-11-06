@@ -30,12 +30,16 @@ function VI.zerovector!(t::ParametrisedTensorMap)
     return t
 end
 
-function VI.add!(ty::ParametrisedTensorMap, tx::AbstractTensorMap, α::Number)
+function VI.add!(ty::ParametrisedTensorMap, tx::AbstractTensorMap, α::Number, β::Number)
+    scale!(ty, β)
     ty += scale!(tx, α)
+    return ty
 end
 
-function VI.add!(ty::ParametrisedTensorMap, tx::ParametrisedTensorMap, α::Number)
+function VI.add!(ty::ParametrisedTensorMap, tx::ParametrisedTensorMap, α::Number, β::Number)
+    scale!(ty, β)
     ty += scale!(tx, α)
+    return ty
 end
 
 LinearAlgebra.norm(::VectorInterface.Zero) = VectorInterface.Zero()
