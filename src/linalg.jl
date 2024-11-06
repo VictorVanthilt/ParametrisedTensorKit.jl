@@ -51,3 +51,17 @@ end
 function LinearAlgebra.mul!(tC::ParametrisedTensorMap, tA::ParametrisedTensorMap, tB::AbstractTensorMap, α, β)
     return tC = β*tC + α * tA * tB
 end
+
+# very poor definition, supposed to only give an indication!
+function LinearAlgebra.norm(t::ParametrisedTensorMap)
+    @warn "Calculating a norm of a ParametrisedTensorMap is not well defined and may not be useful" maxlog=1
+    nm = 0
+    for i in eachindex(t)
+        if t.coeffs[i] isa Number
+            nm += norm(t.coeffs[i]) * norm(t.tensors[i])
+        else
+            nm += norm(t.tensors[i])
+        end
+    end
+    return nm
+end

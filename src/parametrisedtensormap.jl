@@ -258,19 +258,6 @@ function Base.similar(t::ParametrisedTensorMap, TMS::TensorMapSpace)
     return ParametrisedTensorMap{scalartype(t)}(undef, TMS)
 end
 
-# very poor definition, supposed to only give an indication!
-function LinearAlgebra.norm(t::ParametrisedTensorMap)
-    nm = 0
-    for i in eachindex(t)
-        if t.coeffs[i] isa Number
-            nm += norm(t.coeffs[i]) * norm(t.tensors[i])
-        else
-            nm += norm(t.tensors[i])
-        end
-    end
-    return nm
-end
-
 # copy!
 function Base.copy(t::ParametrisedTensorMap)
     return ParametrisedTensorMap(copy(t.tensors), copy(t.coeffs))
