@@ -54,6 +54,27 @@ function TK._add_trivial_kernel!(tdst::ParametrisedTensorMap, tsrc::Parametrised
     return nothing
 end
 
-TK.space(t::ParametrisedTensorMap) = space(t.tensors[1]) 
+TK.space(t::ParametrisedTensorMap) = space(t.tensors[1])
+
+function TK.:⊗(t1::ParametrisedTensorMap, t2::AbstractTensorMap)
+    newtensors = map(t1.tensors) do t
+        TK.:⊗(t, t2)
+    end
+    return ParametrisedTensorMap(newtensors, deepcopy(t1.coeffs))
+end
+
+function TK.:⊗(t1::AbstractTensorMap, t2::ParametrisedTensorMap)
+    newtensors = map(t2.tensors) do t
+        TK.:⊗(t1, t)
+    end
+    return ParametrisedTensorMap(newtensors, deepcopy(t2.coeffs))
+end
+
+function TK.:⊗(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
+    ptms = map(eachindex(t2)) do i
+        TK.:⊗(t1, t2.tensors[i]) * t2.coeffs[i]
+    end
+    return sum(ptms)
+end
 
 # TK.storagetype(t::AbstractTensorMap) = Matrix{scalartype(t)}
