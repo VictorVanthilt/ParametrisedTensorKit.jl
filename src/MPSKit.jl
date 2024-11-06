@@ -9,7 +9,9 @@ for type in [MPO, MPOHamiltonian]
 
     @eval function (O::$type{T})(t) where {TT,T<:SparseBlockTensorMap{TT}}
         return $type(map(parent(O)) do x
-            return SparseBlockTensorMap{TT}(Dict(I => X isa PTM ? X(t) : X for (I, X) in nonzero_pairs(x)), codomain(x), domain(x))
+            data = Dict(I => X isa PTM ? X(t) : X for (I, X) in nonzero_pairs(x))
+            TT′ = valtype(data)
+            return SparseBlockTensorMap{TT′}(data, codomain(x), domain(x))
         end)
     end
 end
