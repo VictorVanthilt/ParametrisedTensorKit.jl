@@ -88,6 +88,10 @@ function ParametrisedTensorMap{E}(::UndefInitializer, TMS::TensorMapSpace) where
     return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs)
 end
 
+function ParametrisedTensorMap{E}(tensors::Vector{<:AbstractTensorMap{E}}, coeffs::Vector{Union{Number, Function}}) where E
+    return ParametrisedTensorMap(tensors, coeffs)
+end
+
 Base.length(t::ParametrisedTensorMap) = length(t.tensors)
 
 # Construct by multiplying coefficient function
