@@ -10,15 +10,20 @@ TK.storagetype(::Type{<:ParametrisedTensorMap{E,S,N1,N2,T}}) where {E,S,N1,N2,T}
 
 TK.has_shared_permute(t::ParametrisedTensorMap, args...) = false
 
-function TK.add_transform!(tdst::AbstractTensorMap{T,S,N₁,N₂},
+function TK.add_transform!(tdst::TensorMap{T,S,N₁,N₂},
     tsrc::ParametrisedTensorMap,
     (p₁, p₂)::Index2Tuple{N₁,N₂},
     fusiontreetransform,
     α::Number,
     β::Number,
     backend::AbstractBackend...) where {T,S,N₁,N₂}
-    @assert tdst isa ParametrisedTensorMap "The destination tensor must be a ParametrisedTensorMap of lenght(tsrc)"
-    throw("This method is not implemented")
+    # @assert tdst isa ParametrisedTensorMap "The destination tensor must be a ParametrisedTensorMap of length(tsrc)"
+    tensors = map(tsrc.tensors) do t
+        t′ = similar(tdst)
+        TK.add_transform!(t′, t, (p₁, p₂), fusiontreetransform, α, β, backend...)
+        return t′
+    end
+    return ParametrisedTensorMap(tensors, deepcopy(tsrc.coeffs))
 end
 
 function TK.add_transform!(tdst::ParametrisedTensorMap{E,S,N₁,N₂},
