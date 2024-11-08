@@ -73,17 +73,15 @@ function ParametrisedTensorMap(tensors::Vector{T}) where {T<:AbstractTensorMap}
     return ParametrisedTensorMap(tensors, fill(1, length(tensors)))
 end
 
-function ParametrisedTensorMap{E}(::UndefInitializer, TMS::TensorMapSpace) where E
+function ParametrisedTensorMap{E}(L::Int, TMS::TensorMapSpace) where E
     N2 = numin(TMS)
     N1 = numout(TMS)
     S = spacetype(TMS)
     T = TensorMap{E,S,N1,N2,Vector{E}}
     
-    tensors = Vector{T}(undef, 1)
-    tensors[1] = zeros(E, TMS)
+    tensors = convert(Vector{T}, fill(ones(E, TMS), L))
 
-    coeffs = Vector{Union{Number,Function}}(undef, 1)
-    coeffs[1] = 0
+    coeffs = convert(Vector{Union{Number,Function}}, fill(t -> 0, L))
 
     return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs)
 end
@@ -255,11 +253,14 @@ end
 
 Base.eachindex(t::ParametrisedTensorMap) = eachindex(t.tensors)
 
+# Make sure that similar returns a PTM with a similar amount of stored tensors
 function Base.similar(t::ParametrisedTensorMap)
-    return ParametrisedTensorMap{scalartype(t)}(undef, space(t))
+    tensors = fill(ones(scalartype(t), space(t)), length(t.tensors))
+    coeffs = convert(Vector{Union{Number,Function}}, fill(t->0, length(t.tensors)))
+    return ParametrisedTensorMap(tensors, coeffs)
 end
 function Base.similar(t::ParametrisedTensorMap, TMS::TensorMapSpace)
-    return ParametrisedTensorMap{scalartype(t)}(undef, TMS)
+    return ParametrisedTensorMap{scalartype(t)}(length(t), TMS)
 end
 
 # copy!

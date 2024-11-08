@@ -104,27 +104,39 @@ function TO.tensorcontract_type(TC, A::AbstractTensorMap, pA::Index2Tuple, conjA
     return ParametrisedTensorMap{TC}
 end
 
-# It is crucial that we allocate a PTM of the right lenght, and then later overwrite the already allocated tensors and coeffs
+# It is crucial that we allocate a PTM of the right length, and then later overwrite the already allocated tensors and coeffs
+# To prevent the inner ParametrisedTensorMap from discarding the allocated tensors due to tensors with 0-norms we add ones to the tensors
+# This is not ideal, to make sure no accidents happen the coefficients are set to trivial functions that return 0
 function TO.tensoralloc_contract(TC, A::ParametrisedTensorMap, pA::Index2Tuple, conjA::Bool,
                               B::AbstractTensorMap, pB::Index2Tuple, conjB::Bool,
                               pAB::Index2Tuple, istemp::Val=Val(false),
                               allocator=TO.DefaultAllocator())
-    return ParametrisedTensorMap{TC}(fill(TO.tensoralloc_contract(TC, A.tensors[1], pA, conjA, B, pB, conjB, pAB, istemp, allocator), length(A)), similar(A.coeffs))
+    coeffs = convert(Vector{Union{Number, Function}}, fill(t -> 0, length(A)))
+    tensors = fill(TO.tensoralloc_contract(TC, A.tensors[1], pA, conjA, B, pB, conjB, pAB, istemp, allocator), length(A))
+    tensors .+= fill(ones(TC, space(tensors[1])), length(tensors))
+    return ParametrisedTensorMap(tensors, coeffs)
 end
 
 function TO.tensoralloc_contract(TC, A::AbstractTensorMap, pA::Index2Tuple, conjA::Bool,
                               B::ParametrisedTensorMap, pB::Index2Tuple, conjB::Bool,
                               pAB::Index2Tuple, istemp::Val=Val(false),
                               allocator=TO.DefaultAllocator())
-    return ParametrisedTensorMap{TC}(fill(TO.tensoralloc_contract(TC, A, pA, conjA, B.tensors[1], pB, conjB, pAB, istemp, allocator), length(B)), similar(B.coeffs))
+    coeffs = convert(Vector{Union{Number, Function}}, fill(t -> 0, length(B)))
+    tensors = fill(TO.tensoralloc_contract(TC, A, pA, conjA, B.tensors[1], pB, conjB, pAB, istemp, allocator), length(B))
+    tensors .+= fill(ones(TC), space(tensors[1]), length(tensors))
+    return ParametrisedTensorMap(tensors, coeffs)
 end
 
 function TO.tensoralloc_contract(TC, A::ParametrisedTensorMap, pA::Index2Tuple, conjA::Bool,
                               B::ParametrisedTensorMap, pB::Index2Tuple, conjB::Bool,
                               pAB::Index2Tuple, istemp::Val=Val(false),
                               allocator=TO.DefaultAllocator())
-    return ParametrisedTensorMap{TC}(fill(TO.tensoralloc_contract(TC, A.tensors[1], pA, conjA, B.tensors[1], pB, conjB, pAB, istemp, allocator)), length(A) * length(B), Vector{Union{Number,Function}}(undef, length(A) * length(B)))
+    coeffs = convert(Vector{Union{Number, Function}}, fill(t -> 0, length(A)*length(B)))
+    tensors = fill(TO.tensoralloc_contract(TC, A.tensors[1], pA, conjA, B.tensors[1], pB, conjB, pAB, istemp, allocator), length(A) * length(B))
+    tensors .+= fill(ones(TC, space(tensors[1])), length(tensors))
+    return ParametrisedTensorMap(tensors, coeffs)
 end
+
 function TO.tensorfree!(t::ParametrisedTensorMap, args...)
     for tensor in t.tensors
         tensorfree!(tensor, args...)
