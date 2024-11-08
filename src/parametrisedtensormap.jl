@@ -2,6 +2,9 @@ struct ParametrisedTensorMap{E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}} <: Abstr
     tensors::Vector{T}
     coeffs::Vector{Union{Number,Function}}
     function ParametrisedTensorMap{E,S,N1,N2,T}(tensors::Vector{T}, coeffs::Vector{Union{Number,Function}}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
+        if !any(isdefined.(Ref(coeffs), eachindex(coeffs)))
+            return new{E,S,N1,N2,T}(tensors, coeffs) # allow undefined PTMs
+        end
         newtensors = similar(tensors, 0)
         newcoeffs = similar(coeffs, 0)
         has_constant = false
@@ -73,15 +76,14 @@ function ParametrisedTensorMap(tensors::Vector{T}) where {T<:AbstractTensorMap}
     return ParametrisedTensorMap(tensors, fill(1, length(tensors)))
 end
 
-function ParametrisedTensorMap{E}(L::Int, TMS::TensorMapSpace) where E
+function ParametrisedTensorMap{E}(::UndefInitializer, TMS::TensorMapSpace) where E
     N2 = numin(TMS)
     N1 = numout(TMS)
     S = spacetype(TMS)
     T = TensorMap{E,S,N1,N2,Vector{E}}
     
-    tensors = convert(Vector{T}, fill(ones(E, TMS), L))
-
-    coeffs = convert(Vector{Union{Number,Function}}, fill(t -> 0, L))
+    tensors = Vector{T}(undef, 1)
+    coeffs = Vector{Union{Number,Function}}(undef, 1)
 
     return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs)
 end
@@ -187,6 +189,16 @@ end
 
 Base.:*(t::ParametrisedTensorMap, α::Number) = α * t
 
+function LinearAlgebra.lmul!(α::Number, t::ParametrisedTensorMap)
+    newcoeffs = map(t.coeffs) do x
+        return combinecoeff(x, α)
+    end
+    t.coeffs .= newcoeffs
+    return t
+end
+
+LinearAlgebra.rmul!(t::ParametrisedTensorMap, α::Number) = lmul!(α, t)
+
 function Base.:*(f::Function, t::ParametrisedTensorMap)
     newcoeffs = map(t.coeffs) do x
         return combinecoeff(f, x)
@@ -255,12 +267,10 @@ Base.eachindex(t::ParametrisedTensorMap) = eachindex(t.tensors)
 
 # Make sure that similar returns a PTM with a similar amount of stored tensors
 function Base.similar(t::ParametrisedTensorMap)
-    tensors = fill(ones(scalartype(t), space(t)), length(t.tensors))
-    coeffs = convert(Vector{Union{Number,Function}}, fill(t->0, length(t.tensors)))
-    return ParametrisedTensorMap(tensors, coeffs)
+    return ParametrisedTensorMap(similar.(t.tensors), similar(t.coeffs))
 end
 function Base.similar(t::ParametrisedTensorMap, TMS::TensorMapSpace)
-    return ParametrisedTensorMap{scalartype(t)}(length(t), TMS)
+    return ParametrisedTensorMap(similar.(t.tensors, Ref(TMS)), similar(t.coeffs))
 end
 
 # copy!
