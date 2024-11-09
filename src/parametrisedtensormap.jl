@@ -2,7 +2,7 @@ struct ParametrisedTensorMap{E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}} <: Abstr
     tensors::Vector{T}
     coeffs::Vector{Union{Number,Function}}
     function ParametrisedTensorMap{E,S,N1,N2,T}(tensors::Vector{T}, coeffs::Vector{Union{Number,Function}}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
-        if !any(isdefined.(Ref(coeffs), eachindex(coeffs)))
+        if !any(isa.(coeffs, Function)) && all(isnan.(coeffs))
             return new{E,S,N1,N2,T}(tensors, coeffs) # allow undefined PTMs
         end
         newtensors = similar(tensors, 0)
@@ -267,10 +267,10 @@ Base.eachindex(t::ParametrisedTensorMap) = eachindex(t.tensors)
 
 # Make sure that similar returns a PTM with a similar amount of stored tensors
 function Base.similar(t::ParametrisedTensorMap)
-    return ParametrisedTensorMap(similar.(t.tensors), similar(t.coeffs))
+    return ParametrisedTensorMap(similar.(t.tensors), Vector{Union{Number,Function}}(fill(NaN, length(t))))
 end
 function Base.similar(t::ParametrisedTensorMap, TMS::TensorMapSpace)
-    return ParametrisedTensorMap(similar.(t.tensors, Ref(TMS)), similar(t.coeffs))
+    return ParametrisedTensorMap(similar.(t.tensors, Ref(TMS)), Vector{Union{Number,Function}}(fill(NaN, length(t))))
 end
 
 # copy!
