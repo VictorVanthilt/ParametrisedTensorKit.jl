@@ -1,10 +1,13 @@
 struct ParametrisedTensorMap{E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}} <: AbstractTensorMap{E,S,N1,N2}
     tensors::Vector{T}
     coeffs::Vector{Union{Number,Function}}
-    function ParametrisedTensorMap{E,S,N1,N2,T}(tensors::Vector{T}, coeffs::Vector{Union{Number,Function}}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
-        if !any(isa.(coeffs, Function)) && all(isnan.(coeffs))
-            return new{E,S,N1,N2,T}(tensors, coeffs) # allow undefined PTMs
+    function ParametrisedTensorMap{E,S,N1,N2,T}(tensors::Vector{T}, coeffs::Vector{Union{Number,Function}}, skipchecks::Bool=false) where {E,S,N1,N2,T}
+        @assert length(tensors) == length(coeffs) "The amount of tensors and coefficients must be the same"
+
+        if skipchecks
+            return new{E,S,N1,N2,T}(tensors, coeffs)
         end
+
         newtensors = similar(tensors, 0)
         newcoeffs = similar(coeffs, 0)
         has_constant = false
@@ -51,15 +54,15 @@ function ParametrisedTensorMap(tensor::T, coeff::C) where {E,S,N1,N2,T<:Abstract
     return ParametrisedTensorMap{E,S,N1,N2,T}(tensorvec, coeffvec)
 end
 
-function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Union{<:Number,<:Function}}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
-    return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs)
+function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Union{<:Number,<:Function}}, skipchecks=false) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
+    return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs, skipchecks)
 end
 
-function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{<:Any}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
+function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{<:Any}, skipchecks=false) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
     # check if the coeffs are only numbers and functions, then stuff them in a vector{number, function} if not, give error
     if all(x -> x isa Union{Number,Function}, coeffs)
         coeffVector = Vector{Union{Number,Function}}(coeffs)
-        return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffVector)
+        return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffVector, skipchecks)
     else
         throw(ArgumentError("coefficients must be a vector of numbers or functions (or a mix)"))
     end
@@ -76,19 +79,19 @@ function ParametrisedTensorMap(tensors::Vector{T}) where {T<:AbstractTensorMap}
     return ParametrisedTensorMap(tensors, fill(1, length(tensors)))
 end
 
-function ParametrisedTensorMap{E}(::UndefInitializer, TMS::TensorMapSpace) where E
+function ParametrisedTensorMap{E}(::UndefInitializer, TMS::TensorMapSpace) where {E}
     N2 = numin(TMS)
     N1 = numout(TMS)
     S = spacetype(TMS)
     T = TensorMap{E,S,N1,N2,Vector{E}}
-    
+
     tensors = Vector{T}(undef, 1)
     coeffs = Vector{Union{Number,Function}}(undef, 1)
 
     return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs)
 end
 
-function ParametrisedTensorMap{E}(tensors::Vector{<:AbstractTensorMap{E}}, coeffs::Vector{Union{Number, Function}}) where E
+function ParametrisedTensorMap{E}(tensors::Vector{<:AbstractTensorMap{E}}, coeffs::Vector{Union{Number,Function}}) where {E}
     return ParametrisedTensorMap(tensors, coeffs)
 end
 
@@ -267,10 +270,10 @@ Base.eachindex(t::ParametrisedTensorMap) = eachindex(t.tensors)
 
 # Make sure that similar returns a PTM with a similar amount of stored tensors
 function Base.similar(t::ParametrisedTensorMap)
-    return ParametrisedTensorMap(similar.(t.tensors), Vector{Union{Number,Function}}(fill(NaN, length(t))))
+    return ParametrisedTensorMap(similar.(t.tensors), zeros(length(t)), true)
 end
 function Base.similar(t::ParametrisedTensorMap, TMS::TensorMapSpace)
-    return ParametrisedTensorMap(similar.(t.tensors, Ref(TMS)), Vector{Union{Number,Function}}(fill(NaN, length(t))))
+    return ParametrisedTensorMap(similar.(t.tensors, Ref(TMS)), zeros(length(t)), true)
 end
 
 # copy!

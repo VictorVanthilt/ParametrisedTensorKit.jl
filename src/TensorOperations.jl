@@ -114,8 +114,8 @@ function TO.tensoralloc_contract(TC, A::ParametrisedTensorMap, pA::Index2Tuple, 
     tensors = map(A.tensors) do a
         return TO.tensoralloc_contract(TC, a, pA, conjA, B, pB, conjB, pAB, istemp, allocator)
     end
-    coeffs = Vector{Union{Number, Function}}(fill(NaN, length(A)))
-    return ParametrisedTensorMap(tensors, coeffs)
+    coeffs = Vector{Union{Number, Function}}(fill(0, length(A)))
+    return ParametrisedTensorMap(tensors, coeffs, true)
 end
 
 function TO.tensoralloc_contract(TC, A::AbstractTensorMap, pA::Index2Tuple, conjA::Bool,
@@ -125,8 +125,8 @@ function TO.tensoralloc_contract(TC, A::AbstractTensorMap, pA::Index2Tuple, conj
     tensors = map(B.tensors) do b
         return TO.tensoralloc_contract(TC, A, pA, conjA, b, pB, conjB, pAB, istemp, allocator)
     end
-    coeffs = Vector{Union{Number, Function}}(fill(NaN, length(B)))
-    return ParametrisedTensorMap(tensors, coeffs)
+    coeffs = Vector{Union{Number, Function}}(fill(0, length(B)))
+    return ParametrisedTensorMap(tensors, coeffs, true)
 end
 
 function TO.tensoralloc_contract(TC, A::ParametrisedTensorMap, pA::Index2Tuple, conjA::Bool,
@@ -136,8 +136,8 @@ function TO.tensoralloc_contract(TC, A::ParametrisedTensorMap, pA::Index2Tuple, 
     tensors = map(Base.Iterators.product(A.tensors, B.tensors)) do (a, b)
         return TO.tensoralloc_contract(TC, a, pA, conjA, b, pB, conjB, pAB, istemp, allocator)
     end
-    coeffs = Vector{Union{Number, Function}}(fill(NaN, length(A)*length(B)))
-    return ParametrisedTensorMap(vec(tensors), coeffs)
+    coeffs = Vector{Union{Number, Function}}(fill(0, length(A)*length(B)))
+    return ParametrisedTensorMap(vec(tensors), coeffs, true)
 end
 
 function TO.tensorfree!(t::ParametrisedTensorMap, args...)
