@@ -111,30 +111,31 @@ function TO.tensoralloc_contract(TC, A::ParametrisedTensorMap, pA::Index2Tuple, 
                               B::AbstractTensorMap, pB::Index2Tuple, conjB::Bool,
                               pAB::Index2Tuple, istemp::Val=Val(false),
                               allocator=TO.DefaultAllocator())
-    coeffs = convert(Vector{Union{Number, Function}}, fill(t -> 0, length(A)))
-    tensors = fill(TO.tensoralloc_contract(TC, A.tensors[1], pA, conjA, B, pB, conjB, pAB, istemp, allocator), length(A))
-    tensors .+= fill(ones(TC, space(tensors[1])), length(tensors))
-    return ParametrisedTensorMap(tensors, coeffs)
+    tensors = map(eachindex(A)) do i
+        return TO.tensoralloc_contract(TC, A.tensors[i], pA, conjA, B, pB, conjB, pAB, istemp, allocator)
+    end
+    return ParametrisedTensorMap(tensors, similar(A.coeffs))
 end
 
 function TO.tensoralloc_contract(TC, A::AbstractTensorMap, pA::Index2Tuple, conjA::Bool,
                               B::ParametrisedTensorMap, pB::Index2Tuple, conjB::Bool,
                               pAB::Index2Tuple, istemp::Val=Val(false),
                               allocator=TO.DefaultAllocator())
-    coeffs = convert(Vector{Union{Number, Function}}, fill(t -> 0, length(B)))
-    tensors = fill(TO.tensoralloc_contract(TC, A, pA, conjA, B.tensors[1], pB, conjB, pAB, istemp, allocator), length(B))
-    tensors .+= fill(ones(TC), space(tensors[1]), length(tensors))
-    return ParametrisedTensorMap(tensors, coeffs)
+    tensors = map(eachindex(B)) do i
+        return TO.tensoralloc_contract(TC, A, pA, conjA, B.tensors[i], pB, conjB, pAB, istemp, allocator)
+    end
+    return ParametrisedTensorMap(tensors, similar(B.coeffs))
 end
 
 function TO.tensoralloc_contract(TC, A::ParametrisedTensorMap, pA::Index2Tuple, conjA::Bool,
                               B::ParametrisedTensorMap, pB::Index2Tuple, conjB::Bool,
                               pAB::Index2Tuple, istemp::Val=Val(false),
                               allocator=TO.DefaultAllocator())
-    coeffs = convert(Vector{Union{Number, Function}}, fill(t -> 0, length(A)*length(B)))
-    tensors = fill(TO.tensoralloc_contract(TC, A.tensors[1], pA, conjA, B.tensors[1], pB, conjB, pAB, istemp, allocator), length(A) * length(B))
-    tensors .+= fill(ones(TC, space(tensors[1])), length(tensors))
-    return ParametrisedTensorMap(tensors, coeffs)
+    tensors = map(Base.Iterators.product(eachindex(A), eachindex(B))) do (i, j)
+        return TO.tensoralloc_contract(TC, A.tensors[i], pA, conjA, B.tensors[j], pB, conjB, pAB, istemp, allocator)
+    end
+    coeffs = Vector{Union{Number,Function}}(undef, length(A) * length(B))
+    return ParametrisedTensorMap(vec(tensors), coeffs)
 end
 
 function TO.tensorfree!(t::ParametrisedTensorMap, args...)
