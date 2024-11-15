@@ -14,17 +14,24 @@ function VI.scale!(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number)
     return ty
 end
 
-VI.scale!(t::ParametrisedTensorMap, α::Number) = α * t
+function VI.scale!(t::ParametrisedTensorMap, α::Number)
+    for i in eachindex(t)
+        t.coeffs[i] = combinecoeff(t.coeffs[i], α)
+    end
+end
 
-VI.add!(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number, β::Number) = scale!(ty, β) + scale!(tx, α)
+function VI.add!(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number, β::Number)
+    ty = scale(ty, β) + scale(tx, α)
+    return ty
+end
 
 function VI.zerovector(t::ParametrisedTensorMap)
-    return ParametrisedTensorMap(zero(t.tensors[1]), 1)
+    return ParametrisedTensorMap(zerovector(t.tensors[1]), 1)
 end
 
 function VI.zerovector!(t::ParametrisedTensorMap)
     for i in eachindex(t.tensors)
-        t.tensors[i] = zero(t.tensors[i])
+        zerovector!(t.tensors[i])
         t.coeffs[i] = 0
     end
     return t
@@ -32,13 +39,13 @@ end
 
 function VI.add!(ty::ParametrisedTensorMap, tx::AbstractTensorMap, α::Number, β::Number)
     scale!(ty, β)
-    ty += scale!(tx, α)
+    ty += scale(tx, α)
     return ty
 end
 
 function VI.add!(ty::ParametrisedTensorMap, tx::ParametrisedTensorMap, α::Number, β::Number)
     scale!(ty, β)
-    ty += scale!(tx, α)
+    ty += scale(tx, α)
     return ty
 end
 
