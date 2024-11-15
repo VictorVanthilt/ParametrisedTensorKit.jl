@@ -4,9 +4,9 @@
 function VI.scale!(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number)
     space(ty) == space(tx) || throw(SpaceMismatch("$(space(ty)) ≠ $(space(tx))"))
 
-    newTens   = copy(tx.tensors)
-    newCoeffs = similar(tx.coeffs,  length(tx))
-    
+    newTens = copy(tx.tensors)
+    newCoeffs = similar(tx.coeffs, length(tx))
+
     for i in eachindex(tx.coeffs)
         newCoeffs[i] = combinecoeff(tx.coeffs[i], α)
     end
@@ -20,11 +20,6 @@ function VI.scale!(t::ParametrisedTensorMap, α::Number)
     end
 end
 
-function VI.add!(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number, β::Number)
-    ty = scale(ty, β) + scale(tx, α)
-    return ty
-end
-
 function VI.zerovector(t::ParametrisedTensorMap)
     return ParametrisedTensorMap(zerovector(t.tensors[1]), 1)
 end
@@ -35,6 +30,11 @@ function VI.zerovector!(t::ParametrisedTensorMap)
         t.coeffs[i] = 0
     end
     return t
+end
+
+function VI.add!(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number, β::Number)
+    ty = scale(ty, β) + scale(tx, α)
+    return ty
 end
 
 function VI.add!(ty::ParametrisedTensorMap, tx::AbstractTensorMap, α::Number, β::Number)
@@ -51,5 +51,5 @@ end
 
 LinearAlgebra.norm(::VectorInterface.Zero) = VectorInterface.Zero()
 
-VI.scalartype(t::ParametrisedTensorMap{E}) where E = E
-VI.scalartype(TT::Type{<:ParametrisedTensorMap{E}}) where E = E
+VI.scalartype(t::ParametrisedTensorMap{E}) where {E} = E
+VI.scalartype(TT::Type{<:ParametrisedTensorMap{E}}) where {E} = E
