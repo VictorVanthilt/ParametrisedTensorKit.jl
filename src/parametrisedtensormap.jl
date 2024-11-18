@@ -275,6 +275,9 @@ end
 function Base.similar(t::ParametrisedTensorMap, TMS::TensorMapSpace)
     return ParametrisedTensorMap(similar.(t.tensors, Ref(TMS)), zeros(length(t)), true)
 end
+function Base.similar(t::ParametrisedTensorMap, E::Type{<:Number})
+    return ParametrisedTensorMap(similar.(t.tensors, E), zeros(E, length(t)), true)
+end
 
 # copy!
 function Base.copy(t::ParametrisedTensorMap)
