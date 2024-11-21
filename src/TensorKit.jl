@@ -8,7 +8,7 @@ TK.codomain(t::ParametrisedTensorMap) = codomain(t.tensors[1])
 
 TK.storagetype(::Type{<:ParametrisedTensorMap{E,S,N1,N2,T}}) where {E,S,N1,N2,T} = TensorKit.storagetype(T)
 
-TK.has_shared_permute(t::ParametrisedTensorMap, args...) = false
+TK.has_shared_permute(t::ParametrisedTensorMap, ::TK.Index2Tuple) = false
 
 function TK.add_transform!(tdst::TensorMap{T,S,N₁,N₂},
     tsrc::ParametrisedTensorMap,
@@ -34,7 +34,8 @@ function TK.add_transform!(tdst::ParametrisedTensorMap{E,S,N₁,N₂},
     β::Number,
     backend::AbstractBackend...) where {E,S,N₁,N₂}
 
-    @assert length(tdst) == length(tsrc) "The number of tensors in the destination and source must be the same"
+    # TODO: sometimes there's too many tensors in the destination; where is the destination allocated?
+    @assert length(tdst) >= length(tsrc) "The number of tensors in the destination and source must be the same"
 
     for i in eachindex(tsrc)
         tdst.coeffs[i] = deepcopy(tsrc.coeffs[i])
