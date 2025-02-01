@@ -4,7 +4,7 @@ module ParametrisedTensorKit
 using MPSKit, TensorOperations, BlockTensorKit, TensorKit, LinearAlgebra, VectorInterface
 using QuadGK
 
-export ParametrisedTensorMap, delay
+export ParametrisedTensorMap, delay, integrate
 
 using TensorOperations: AbstractBackend
 
