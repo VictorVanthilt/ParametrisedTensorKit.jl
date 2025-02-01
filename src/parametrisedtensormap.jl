@@ -150,22 +150,21 @@ end
 
 # Coefficient combination
 # -----------------------
-function combinecoeff(f1::Function, f2::Number)
+function combinecoeff(f1::F, f2::Number) where {F<:Function}
     return (t) -> f1(t) * f2
 end
 
-function combinecoeff(f1::Number, f2::Function)
+function combinecoeff(f1::Number, f2::F) where {F<:Function}
     return (t) -> f1 * f2(t)
 end
 
-function combinecoeff(f1::Function, f2::Function)
+function combinecoeff(f1::F1, f2::F2) where {F1<:Function, F2<:Function}
     return CF([f1, f2])
 end
 
-function combinecoeff(f1::Coefficient, f2::Coefficient)
+function combinecoeff(f1::Union{Coefficient, Function}, f2::Union{Coefficient, Function})
     return f1 * f2
 end
-
 
 # Addition methods
 # ----------------
