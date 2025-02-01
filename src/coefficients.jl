@@ -10,8 +10,8 @@ Base.:*(cf::CF, f::Function) = CF(vcat(cf.fs, [f]))
 Base.:*(f::Function, cf::CF) = CF(vcat([f], cf.fs))
 
 Base.adjoint(cf::CF) = CF(map(cf.fs) do f
-    return adjoint(f)
-end)
+                              return adjoint(f)
+                          end)
 
 function (cf::CF)(t::Number)
     p = 1
@@ -19,4 +19,11 @@ function (cf::CF)(t::Number)
         p *= f(t)
     end
     return p
+end
+
+# TODO: move this to MPSKit
+function integrate(cf::CF, t₀::Number, t₁::Number)
+    return prod(map(cf.fs) do f
+                    return quadgk(f, t₀, t₁)[1]
+                end)
 end

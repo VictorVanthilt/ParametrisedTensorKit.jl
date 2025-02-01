@@ -150,10 +150,6 @@ end
 
 # Coefficient combination
 # -----------------------
-function combinecoeff(f1::Number, f2::Number)
-    return f1 * f2
-end
-
 function combinecoeff(f1::Function, f2::Number)
     return (t) -> f1(t) * f2
 end
@@ -166,14 +162,10 @@ function combinecoeff(f1::Function, f2::Function)
     return CF([f1, f2])
 end
 
-
-function combinecoeff(f1::CF, f2::Function)
+function combinecoeff(f1::Coefficient, f2::Coefficient)
     return f1 * f2
 end
 
-function combinecoeff(f1::Function, f2::CF)
-    return f1 * f2
-end
 
 # Addition methods
 # ----------------
@@ -299,5 +291,12 @@ function delay(t::ParametrisedTensorMap, dt::Number)
         else
             return x
         end
+    end)
+end
+
+# TODO: move this to MPSKit
+function integrate(t::ParametrisedTensorMap, t₀::Number, t₁::Number)
+    return sum(map(zip(t.coeffs, t.tensors)) do (f, x)
+        return f isa Number ? f*x : integrate(f, t₀, t₁)*x
     end)
 end
