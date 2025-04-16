@@ -1,37 +1,10 @@
 struct ParametrisedTensorMap{E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}} <: AbstractTensorMap{E,S,N1,N2}
     tensors::Vector{T}
-    coeffs::Vector{Union{Number,Function}}
-    function ParametrisedTensorMap{E,S,N1,N2,T}(tensors::Vector{T}, coeffs::Vector{Union{Number,Function}}, skipchecks::Bool=false) where {E,S,N1,N2,T}
+    coeffs::Vector{Prefactor}
+    function ParametrisedTensorMap{E,S,N1,N2,T}(tensors::Vector{T}, coeffs::Vector{Prefactor}) where {E,S,N1,N2,T}
         @assert length(tensors) == length(coeffs) "The amount of tensors and coefficients must be the same"
 
-        if skipchecks
-            return new{E,S,N1,N2,T}(tensors, coeffs)
-        end
-
-        newtensors = similar(tensors, 0)
-        newcoeffs = similar(coeffs, 0)
-        has_constant = false
-        for i in eachindex(tensors)
-            if norm(tensors[i]) > eps(real(scalartype(tensors[i])))^(3 / 4) # Check if it is worth to store the tensor
-                if coeffs[i] isa Number && !iszero(coeffs[i]) # Insert constant multplied tensors at the front or add them to existing constant tensor
-                    if has_constant
-                        newtensors[1] += coeffs[i] * tensors[i]
-                    else
-                        insert!(newtensors, 1, coeffs[i] * tensors[i])
-                        insert!(newcoeffs, 1, 1)
-                        has_constant = true
-                    end
-                else # Coeff is a function and thus needs to be stored independently
-                    push!(newtensors, tensors[i])
-                    push!(newcoeffs, coeffs[i])
-                end
-            end
-        end
-        if isempty(newtensors) # have at least one tensor stored, even if it and/or its coeff are zero
-            push!(newtensors, zerovector(tensors[1]))
-            push!(newcoeffs, 0)
-        end
-        return new{E,S,N1,N2,T}(newtensors, newcoeffs)
+        return new{E,S,N1,N2,T}(tensors, coeffs)
     end
 end
 
@@ -45,55 +18,43 @@ end
 
 # Constructors
 # ------------
-
-function ParametrisedTensorMap(tensor::T, coeff::C) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2},C<:Union{Number,Function}}
-    tensorvec = Vector{T}(undef, 1)
-    coeffvec = Vector{Union{Number,Function}}(undef, 1)
-    tensorvec[1] = tensor
-    coeffvec[1] = coeff
-    return ParametrisedTensorMap{E,S,N1,N2,T}(tensorvec, coeffvec)
+function ParametrisedTensorMap(tensor::T, coeff::Prefactor) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
+    return ParametrisedTensorMap{E,S,N1,N2,T}(Vector{T}[tensor], Vector{Prefactor}[coeff])
+end
+function ParametrisedTensorMap(tensor::T, coeff::Nunction) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
+    return ParametrisedTensorMap{E,S,N1,N2,T}(Vector{T}[tensor], Vector{Prefactor}[Prefactor(coeff)])
+end
+function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Prefactor}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
+    return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs)
+end
+function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Nunction}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
+    return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, Vector{Prefactor}(Prefactor.(coeffs)))
 end
 
-function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Union{<:Number,<:Function}}, skipchecks=false) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
-    return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs, skipchecks)
+function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Union{<:Number,<:Function}}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
+    return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs)
 end
-
-function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{<:Any}, skipchecks=false) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
-    # check if the coeffs are only numbers and functions, then stuff them in a vector{number, function} if not, give error
-    if all(x -> x isa Union{Number,Function}, coeffs)
-        coeffVector = Vector{Union{Number,Function}}(coeffs)
-        return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffVector, skipchecks)
-    else
-        throw(ArgumentError("coefficients must be a vector of numbers or functions (or a mix)"))
-    end
-end
-
 function ParametrisedTensorMap(tensor::T) where {T<:AbstractTensorMap}
     if tensor isa ParametrisedTensorMap
         return tensor
     end
     return ParametrisedTensorMap(tensor, 1)
 end
-
 function ParametrisedTensorMap(tensors::Vector{T}) where {T<:AbstractTensorMap}
     return ParametrisedTensorMap(tensors, fill(1, length(tensors)))
 end
 
-function ParametrisedTensorMap{E}(::UndefInitializer, TMS::TensorMapSpace) where {E}
-    N2 = numin(TMS)
-    N1 = numout(TMS)
-    S = spacetype(TMS)
-    T = TensorMap{E,S,N1,N2,Vector{E}}
+# function ParametrisedTensorMap{E}(::UndefInitializer, TMS::TensorMapSpace) where {E}
+#     N2 = numin(TMS)
+#     N1 = numout(TMS)
+#     S = spacetype(TMS)
+#     T = TensorMap{E,S,N1,N2,Vector{E}}
 
-    tensors = Vector{T}(undef, 1)
-    coeffs = Vector{Union{Number,Function}}(undef, 1)
+#     tensors = Vector{T}(undef, 1)
+#     coeffs = Vector{Union{Number,Function}}(undef, 1)
 
-    return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs)
-end
-
-function ParametrisedTensorMap{E}(tensors::Vector{<:AbstractTensorMap{E}}, coeffs::Vector{Union{Number,Function}}) where {E}
-    return ParametrisedTensorMap(tensors, coeffs)
-end
+#     return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs)
+# end
 
 Base.length(t::ParametrisedTensorMap) = length(t.tensors)
 

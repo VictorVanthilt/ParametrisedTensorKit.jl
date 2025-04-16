@@ -10,6 +10,9 @@ import VectorInterface as VI
 import TensorOperations as TO
 import TensorKit as TK
 
+# Prefactor logic
+include("Prefactors/Prefactors.jl")
+using .Prefactors
 
 include("parametrisedtensormap.jl")
 include("MPSKit.jl")
