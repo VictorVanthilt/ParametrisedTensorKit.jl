@@ -241,3 +241,5 @@ function purge!(t::ParametrisedTensorMap)
     end
     return t 
 end
+
+purge!(t::AbstractTensorMap) = t
