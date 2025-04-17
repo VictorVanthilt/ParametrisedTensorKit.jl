@@ -232,7 +232,6 @@ end
 
 function purge!(t::ParametrisedTensorMap)
     to_keep = [!iszero(t.tensors[i]) for i in eachindex(t.tensors)]
-    @show to_keep
     for (i, keep) in enumerate(to_keep)
         if !keep
             deleteat!(t.tensors, i)
