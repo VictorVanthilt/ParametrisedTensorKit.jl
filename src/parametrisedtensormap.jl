@@ -3,17 +3,8 @@ struct ParametrisedTensorMap{E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}} <: Abstr
     coeffs::Vector{Prefactor}
     function ParametrisedTensorMap{E,S,N1,N2,T}(tensors::Vector{T}, coeffs::Vector{Prefactor}) where {E,S,N1,N2,T}
         @assert length(tensors) == length(coeffs) "The amount of tensors and coefficients must be the same"
-
         return new{E,S,N1,N2,T}(tensors, coeffs)
     end
-end
-
-# use getproperty to check if the PTM has a constant tensor instead of storing a bool as a field
-function Base.getproperty(t::ParametrisedTensorMap, prop::Symbol)
-    if prop == :has_constant
-        return t.coeffs[1] isa Number
-    end
-    return getfield(t, prop)
 end
 
 # Constructors
@@ -22,17 +13,13 @@ function ParametrisedTensorMap(tensor::T, coeff::Prefactor) where {E,S,N1,N2,T<:
     return ParametrisedTensorMap{E,S,N1,N2,T}(Vector{T}[tensor], Vector{Prefactor}[coeff])
 end
 function ParametrisedTensorMap(tensor::T, coeff::Nunction) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
-    return ParametrisedTensorMap{E,S,N1,N2,T}(Vector{T}[tensor], Vector{Prefactor}[Prefactor(coeff)])
+    return ParametrisedTensorMap{E,S,N1,N2,T}([tensor], [Prefactor(coeff)])
 end
 function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Prefactor}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
     return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs)
 end
 function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Nunction}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
     return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, Vector{Prefactor}(Prefactor.(coeffs)))
-end
-
-function ParametrisedTensorMap(tensors::Vector{T}, coeffs::Vector{Union{<:Number,<:Function}}) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
-    return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs)
 end
 function ParametrisedTensorMap(tensor::T) where {T<:AbstractTensorMap}
     if tensor isa ParametrisedTensorMap
@@ -43,18 +30,6 @@ end
 function ParametrisedTensorMap(tensors::Vector{T}) where {T<:AbstractTensorMap}
     return ParametrisedTensorMap(tensors, fill(1, length(tensors)))
 end
-
-# function ParametrisedTensorMap{E}(::UndefInitializer, TMS::TensorMapSpace) where {E}
-#     N2 = numin(TMS)
-#     N1 = numout(TMS)
-#     S = spacetype(TMS)
-#     T = TensorMap{E,S,N1,N2,Vector{E}}
-
-#     tensors = Vector{T}(undef, 1)
-#     coeffs = Vector{Union{Number,Function}}(undef, 1)
-
-#     return ParametrisedTensorMap{E,S,N1,N2,T}(tensors, coeffs)
-# end
 
 Base.length(t::ParametrisedTensorMap) = length(t.tensors)
 
@@ -74,11 +49,7 @@ function Base.show(io::IO, ptm::ParametrisedTensorMap)
 
     print(io, "ParametrisedTensorMap: ")
     for i in eachindex(ptm)
-        if ptm.coeffs[i] isa Function
-            print(io, "f", subscript(i))
-        else
-            print(io, "α", subscript(i))
-        end
+        print(io, "f", subscript(i))
         print(io, "T", subscript(i))
         if i < length(ptm.tensors)
             print(io, " + ")
@@ -99,13 +70,8 @@ function (ptm::ParametrisedTensorMap)(t::Number)
     return evaluated
 end
 
-function eval_coeff(F::Union{Number,Function}, t::Number)
-    return F isa Number ? F : F(t)
-end
-
-function eval_coeffs(ptm::ParametrisedTensorMap, t::Number)
-    return ptm(t)
-end
+eval_coeff(F::Prefactor, t::Number) = F(t)
+eval_coeffs(ptm::ParametrisedTensorMap, t::Number) = ptm(t)
 
 # Coefficient combination
 # -----------------------
@@ -125,7 +91,6 @@ function combinecoeff(f1::Number, f2::Number)
     return f1 * f2
 end
 
-
 # Addition methods
 # ----------------
 function Base.:+(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
@@ -136,7 +101,7 @@ end
 
 function Base.:+(t1::ParametrisedTensorMap, t2::AbstractTensorMap)
     newtensors = vcat(t1.tensors, t2)
-    newcoeffs = vcat(t1.coeffs, 1)
+    newcoeffs = vcat(t1.coeffs, Prefactor(1))
     return ParametrisedTensorMap(newtensors, newcoeffs)
 end
 
@@ -144,38 +109,47 @@ Base.:+(t1::AbstractTensorMap, t2::ParametrisedTensorMap) = t2 + t1
 
 # Multiplication methods
 # ----------------------
+# Massive code duplication for disambiguation
 function Base.:*(α::Number, t::ParametrisedTensorMap)
     newcoeffs = map(t.coeffs) do x
-        return combinecoeff(x, α)
+        return α*x
     end
-    return ParametrisedTensorMap(t.tensors, newcoeffs)
+    return ParametrisedTensorMap(deepcopy(t.tensors), newcoeffs)
+end
+function Base.:*(α::Function, t::ParametrisedTensorMap)
+    newcoeffs = map(t.coeffs) do x
+        return α*x
+    end
+    return ParametrisedTensorMap(deepcopy(t.tensors), newcoeffs)
 end
 
-Base.:*(t::ParametrisedTensorMap, α::Number) = α * t
-
-function LinearAlgebra.lmul!(α::Number, t::ParametrisedTensorMap)
+function Base.:*(t::ParametrisedTensorMap, α::Number)
     newcoeffs = map(t.coeffs) do x
-        return combinecoeff(x, α)
+        return x*α
+    end
+    return ParametrisedTensorMap(deepcopy(t.tensors), newcoeffs)
+end
+function Base.:*(t::ParametrisedTensorMap, α::Function)
+    newcoeffs = map(t.coeffs) do x
+        return x * α
+    end
+    return ParametrisedTensorMap(deepcopy(t.tensors), newcoeffs)
+end
+
+function LinearAlgebra.lmul!(α::Nunction, t::ParametrisedTensorMap)
+    newcoeffs = map(t.coeffs) do x
+        return α * x
     end
     t.coeffs .= newcoeffs
     return t
 end
 
-LinearAlgebra.rmul!(t::ParametrisedTensorMap, α::Number) = lmul!(α, t)
-
-function Base.:*(f::Function, t::ParametrisedTensorMap)
+function LinearAlgebra.rmul!(t::ParametrisedTensorMap, α::Nunction)
     newcoeffs = map(t.coeffs) do x
-        return combinecoeff(f, x)
+        return x * α
     end
-    typeof(newcoeffs) == Vector{Union{Number,Function}} || convert(Vector{Union{Number,Function}}, newcoeffs)
-    return ParametrisedTensorMap(t.tensors, newcoeffs)
-end
-
-function Base.:*(t::ParametrisedTensorMap, f::Function)
-    newcoeffs = map(t.coeffs) do x
-        return combinecoeff(x, f)
-    end
-    return ParametrisedTensorMap(t.tensors, newcoeffs)
+    t.coeffs .= newcoeffs
+    return t
 end
 
 function Base.:*(t1::AbstractTensorMap, t2::ParametrisedTensorMap)
@@ -194,12 +168,12 @@ end
 
 function Base.:*(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
     newtensors = similar(t1.tensors, length(t1) * length(t2))
-    newcoeffs = Vector{Union{Number,Function}}(undef, length(t1) * length(t2))
+    newcoeffs = Vector{Prefactor}(undef, length(t1) * length(t2))
     for i in eachindex(t1)
         for j in eachindex(t2)
             index = (i - 1) * length(t2) + j
             newtensors[index] = t1.tensors[i] * t2.tensors[j]
-            newcoeffs[index] = combinecoeff(t1.coeffs[i], t2.coeffs[j])
+            newcoeffs[index] = t1.coeffs[i] * t2.coeffs[j]
         end
     end
     return ParametrisedTensorMap(newtensors, newcoeffs)
@@ -231,13 +205,13 @@ Base.eachindex(t::ParametrisedTensorMap) = eachindex(t.tensors)
 
 # Make sure that similar returns a PTM with a similar amount of stored tensors
 function Base.similar(t::ParametrisedTensorMap)
-    return ParametrisedTensorMap(similar.(t.tensors), zeros(length(t)), true)
+    return ParametrisedTensorMap(similar.(t.tensors), zeros(length(t)))
 end
 function Base.similar(t::ParametrisedTensorMap, TMS::TensorMapSpace)
-    return ParametrisedTensorMap(similar.(t.tensors, Ref(TMS)), zeros(length(t)), true)
+    return ParametrisedTensorMap(similar.(t.tensors, Ref(TMS)), zeros(length(t)))
 end
 function Base.similar(t::ParametrisedTensorMap, E::Type{<:Number})
-    return ParametrisedTensorMap(similar.(t.tensors, E), zeros(E, length(t)), true)
+    return ParametrisedTensorMap(similar.(t.tensors, E), zeros(E, length(t)))
 end
 
 # copy!
@@ -246,12 +220,12 @@ function Base.copy(t::ParametrisedTensorMap)
 end
 
 # Delay the coefficients of a ParametrisedTensorMap, going back in time by dt
-function delay(t::ParametrisedTensorMap, dt::Number)
-    return ParametrisedTensorMap(t.tensors, map(t.coeffs) do x
-        if x isa Function
-            return (t) -> x(t - dt)
-        else
-            return x
-        end
-    end)
-end
+# function delay(t::ParametrisedTensorMap, dt::Number)
+#     return ParametrisedTensorMap(t.tensors, map(t.coeffs) do x
+#         if x isa Function
+#             return (t) -> x(t - dt)
+#         else
+#             return x
+#         end
+#     end)
+# end

@@ -2,7 +2,8 @@ module ParametrisedTensorKit
 
 using MPSKit, TensorOperations, BlockTensorKit, TensorKit, LinearAlgebra, VectorInterface
 
-export ParametrisedTensorMap, delay
+export ParametrisedTensorMap
+# export delay
 
 using TensorOperations: AbstractBackend
 

@@ -4,6 +4,8 @@ struct Prefactor
     data::Vector{Nunction}
 end
 
+Prefactor(f::Nunction) = Prefactor([f])
+
 function Base.show(io::IO, pf::Prefactor)
     print(io, "Prefactor(")
     for i in 1:length(pf.data)
