@@ -205,13 +205,13 @@ Base.eachindex(t::ParametrisedTensorMap) = eachindex(t.tensors)
 
 # Make sure that similar returns a PTM with a similar amount of stored tensors
 function Base.similar(t::ParametrisedTensorMap)
-    return ParametrisedTensorMap(similar.(t.tensors), zeros(length(t)))
+    return ParametrisedTensorMap(similar.(t.tensors), Prefactor.(zeros(length(t))))
 end
 function Base.similar(t::ParametrisedTensorMap, TMS::TensorMapSpace)
-    return ParametrisedTensorMap(similar.(t.tensors, Ref(TMS)), zeros(length(t)))
+    return ParametrisedTensorMap(similar.(t.tensors, Ref(TMS)), Prefactor.(zeros(length(t))))
 end
 function Base.similar(t::ParametrisedTensorMap, E::Type{<:Number})
-    return ParametrisedTensorMap(similar.(t.tensors, E), zeros(E, length(t)))
+    return ParametrisedTensorMap(similar.(t.tensors, E), Prefactor.(zeros(E, length(t))))
 end
 
 # copy!
