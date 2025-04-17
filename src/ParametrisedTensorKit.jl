@@ -4,6 +4,7 @@ using MPSKit, TensorOperations, BlockTensorKit, TensorKit, LinearAlgebra, Vector
 
 export ParametrisedTensorMap
 # export delay
+export purge!
 
 using TensorOperations: AbstractBackend
 

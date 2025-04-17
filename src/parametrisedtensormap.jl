@@ -94,8 +94,8 @@ end
 # Addition methods
 # ----------------
 function Base.:+(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
-    newtensors = vcat(t1.tensors, t2.tensors)
-    newcoeffs = vcat(t1.coeffs, t2.coeffs)
+    newtensors = vcat(deepcopy(t1.tensors), deepcopy(t2.tensors))
+    newcoeffs = vcat(deepcopy(t1.coeffs), deepcopy(t2.coeffs))
     return ParametrisedTensorMap(newtensors, newcoeffs)
 end
 
@@ -229,3 +229,15 @@ end
 #         end
 #     end)
 # end
+
+function purge!(t::ParametrisedTensorMap)
+    to_keep = [!iszero(t.tensors[i]) for i in eachindex(t.tensors)]
+    @show to_keep
+    for (i, keep) in enumerate(to_keep)
+        if !keep
+            deleteat!(t.tensors, i)
+            deleteat!(t.coeffs, i)
+        end
+    end
+    return t 
+end
