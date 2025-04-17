@@ -161,6 +161,9 @@ end
 # function combinecoeff(f1::F1, f2::F2) where {F1<:Function, F2<:Function}
 #     return CF([f1, f2])
 # end
+function combinecoeff(f1, f2)
+    return f1 * f2
+end
 
 function combinecoeff(f1::Coefficient, f2::Coefficient)
     return f1 * f2
@@ -197,7 +200,7 @@ Base.:+(t1::AbstractTensorMap, t2::ParametrisedTensorMap) = t2 + t1
 # Multiplication methods
 # ----------------------
 function Base.:*(α::Number, t::ParametrisedTensorMap)
-    newcoeffs = map(t.coeffs) do x
+    newcoeffs = map(deepcopy(t.coeffs)) do x
         return combinecoeff(x, α)
     end
     return ParametrisedTensorMap(t.tensors, newcoeffs)
