@@ -100,6 +100,9 @@ function Base.:+(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
 end
 
 function Base.:+(t1::ParametrisedTensorMap, t2::AbstractTensorMap)
+    if iszero(t2) # never add exact zeros!
+        return deepcopy(t1)
+    end
     newtensors = vcat(t1.tensors, t2)
     newcoeffs = vcat(t1.coeffs, Prefactor(1))
     return ParametrisedTensorMap(newtensors, newcoeffs)
