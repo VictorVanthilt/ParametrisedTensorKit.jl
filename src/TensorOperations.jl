@@ -12,8 +12,8 @@ function TO.tensorcontract!(C::AbstractTensorMap, pAB::Index2Tuple,
     newCoeff[1] = Prefactor(β)
 
     for i in eachindex(A.tensors)
-        newTens[i+1] = tensorcontract(pAB, A.tensors[i], pA, conjA, B, pB, conjB, 1)
-        newCoeff[i+1] = α*A.coeffs[i]
+        newTens[i+1] = tensorcontract(pAB, A.tensors[i], pA, conjA, B, pB, conjB, α)
+        newCoeff[i+1] = deepcopy(A.coeffs[i])
     end
     C = ParametrisedTensorMap(newTens, newCoeff)
     return C
@@ -31,8 +31,8 @@ function TO.tensorcontract!(C::AbstractTensorMap, pAB::Index2Tuple,
     newCoeff[1] = Prefactor(β)
 
     for i in eachindex(B.tensors)
-        newTens[i+1] = tensorcontract(pAB, A, pA, conjA, B.tensors[i], pB, conjB, 1)
-        newCoeff[i+1] = α*B.coeffs[i]
+        newTens[i+1] = tensorcontract(pAB, A, pA, conjA, B.tensors[i], pB, conjB, α)
+        newCoeff[i+1] = deepcopy(B.coeffs[i])
     end
     C = ParametrisedTensorMap(newTens, newCoeff)
     return C
@@ -159,10 +159,8 @@ end
 function TO.tensortrace(pC::Index2Tuple, A::ParametrisedTensorMap,
                         pA::Index2Tuple, conjA::Symbol, α::Number)
     tensors = map(A.tensors) do t
-        return tensortrace(pC, t, pA, conjA, 1)
+        return α * tensortrace(pC, t, pA, conjA, 1)
     end
-    coeffs = map(A.coeffs) do c
-        return α*c
-    end
+    coeffs = deepcopy(A.coeffs)
     return ParametrisedTensorMap(tensors, coeffs)
 end
