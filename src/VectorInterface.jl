@@ -35,7 +35,7 @@ end
 
 function VI.scale!(t::ParametrisedTensorMap, α::Number)
     for i in eachindex(t)
-        t.coeffs[i] = combinecoeff(t.coeffs[i], α)
+        t.coeffs[i] = t.coeffs[i] * α
     end
 end
 
@@ -53,7 +53,7 @@ function VI.scale!(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number)
 
     for i in 1:L_tx
         ty.tensors[i] = tx.tensors[i]
-        ty.coeffs[i] = combinecoeff(tx.coeffs[i], α)
+        ty.coeffs[i] = α * tx.coeffs[i]
     end
     return ty
 end
