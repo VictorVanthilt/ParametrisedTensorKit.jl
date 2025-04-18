@@ -18,7 +18,7 @@ end
 function VI.zerovector!(t::ParametrisedTensorMap)
     for i in eachindex(t.tensors)
         zerovector!(t.tensors[i])
-        t.coeffs[i] = 0
+        t.coeffs[i] = Prefactor(0)
     end
     return t
 end
@@ -67,7 +67,7 @@ function VI.add(ty::ParametrisedTensorMap, tx::AbstractTensorMap, α::Number, β
     tz = copy(ty)
     scale!(tz, β)
     push!(tz.tensors, tx)
-    push!(tz.coeffs, α)
+    push!(tz.coeffs, Prefactor(α))
     return tz
 end
 
@@ -75,7 +75,7 @@ function VI.add(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number, β
     tz = copy(tx)
     scale!(tz, α)
     push!(tz.tensors, ty)
-    push!(tz.coeffs, β)
+    push!(tz.coeffs, Prefactor(β))
     return tz
 end
 
@@ -84,7 +84,7 @@ function VI.add(ty::ParametrisedTensorMap, tx::ParametrisedTensorMap, α::Number
     scale!(tz, β)
     for i in eachindex(tx)
         push!(tz.tensors, tx.tensors[i])
-        push!(tz.coeffs, combinecoeff(tx.coeffs[i], α))
+        push!(tz.coeffs, α * tx.coeffs[i])
     end
     return tz
 end
@@ -94,7 +94,7 @@ function VI.add!(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number, �
     scale!(ty, β)
     for i in eachindex(tx)
         push!(ty.tensors, tx.tensors[i])
-        push!(ty.coeffs, combinecoeff(tx.coeffs[i], α))
+        push!(ty.coeffs, α * tx.coeffs[i])
     end
     return ty
 end
@@ -102,7 +102,7 @@ end
 function VI.add!(ty::ParametrisedTensorMap, tx::AbstractTensorMap, α::Number, β::Number)
     scale!(ty, β)
     push!(ty.tensors, tx)
-    push!(ty.coeffs, α)
+    push!(ty.coeffs, Prefactor(α))
     return ty
 end
 
@@ -110,7 +110,7 @@ function VI.add!(ty::ParametrisedTensorMap, tx::ParametrisedTensorMap, α::Numbe
     scale!(ty, β)
     for i in eachindex(tx)
         push!(ty.tensors, tx.tensors[i])
-        push!(ty.coeffs, combinecoeff(tx.coeffs[i], α))
+        push!(ty.coeffs, α * tx.coeffs[i])
     end
     return ty
 end
