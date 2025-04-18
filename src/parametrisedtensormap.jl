@@ -73,24 +73,6 @@ end
 eval_coeff(F::Prefactor, t::Number) = F(t)
 eval_coeffs(ptm::ParametrisedTensorMap, t::Number) = ptm(t)
 
-# Coefficient combination
-# -----------------------
-function combinecoeff(f1::Function, f2::Number)
-    return (t) -> f1(t) * f2
-end
-
-function combinecoeff(f1::Number, f2::Function)
-    return (t) -> f1 * f2(t)
-end
-
-function combinecoeff(f1::Function, f2::Function)
-    return (t) -> f1(t) * f2(t)
-end
-
-function combinecoeff(f1::Number, f2::Number)
-    return f1 * f2
-end
-
 # Addition methods
 # ----------------
 function Base.:+(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
@@ -112,12 +94,12 @@ Base.:+(t1::AbstractTensorMap, t2::ParametrisedTensorMap) = t2 + t1
 
 # Multiplication methods
 # ----------------------
-# Massive code duplication for disambiguation
+# Massive code duplication for disambiguation, absorb numbers in the tensors
 function Base.:*(α::Number, t::ParametrisedTensorMap)
-    newcoeffs = map(t.coeffs) do x
+    newtensors = map(t.tensors) do x
         return α*x
     end
-    return ParametrisedTensorMap(deepcopy(t.tensors), newcoeffs)
+    return ParametrisedTensorMap(newtensors, deepcopy(t.coeffs))
 end
 function Base.:*(α::Function, t::ParametrisedTensorMap)
     newcoeffs = map(t.coeffs) do x
@@ -127,10 +109,10 @@ function Base.:*(α::Function, t::ParametrisedTensorMap)
 end
 
 function Base.:*(t::ParametrisedTensorMap, α::Number)
-    newcoeffs = map(t.coeffs) do x
+    newtensors = map(t.tensors) do x
         return x*α
     end
-    return ParametrisedTensorMap(deepcopy(t.tensors), newcoeffs)
+    return ParametrisedTensorMap(newtensors, deepcopy(newcoeffs))
 end
 function Base.:*(t::ParametrisedTensorMap, α::Function)
     newcoeffs = map(t.coeffs) do x
@@ -139,7 +121,15 @@ function Base.:*(t::ParametrisedTensorMap, α::Function)
     return ParametrisedTensorMap(deepcopy(t.tensors), newcoeffs)
 end
 
-function LinearAlgebra.lmul!(α::Nunction, t::ParametrisedTensorMap)
+function LinearAlgebra.lmul!(α::Number, t::ParametrisedTensorMap)
+    newtensors = map(t.tensors) do x
+        return α * x
+    end
+    t.tensors .= newtensors
+    return t
+end
+
+function LinearAlgebra.lmul!(α::Function, t::ParametrisedTensorMap)
     newcoeffs = map(t.coeffs) do x
         return α * x
     end
@@ -147,7 +137,15 @@ function LinearAlgebra.lmul!(α::Nunction, t::ParametrisedTensorMap)
     return t
 end
 
-function LinearAlgebra.rmul!(t::ParametrisedTensorMap, α::Nunction)
+function LinearAlgebra.rmul!(α::Number, t::ParametrisedTensorMap)
+    newtensors = map(t.tensors) do x
+        return x * α
+    end
+    t.tensors .= newtensors
+    return t
+end
+
+function LinearAlgebra.rmul!(t::ParametrisedTensorMap, α::Function)
     newcoeffs = map(t.coeffs) do x
         return x * α
     end
