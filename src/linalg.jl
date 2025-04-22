@@ -52,6 +52,38 @@ function LinearAlgebra.mul!(tC::ParametrisedTensorMap, tA::ParametrisedTensorMap
     return tC = β*tC + α * tA * tB
 end
 
+function LinearAlgebra.lmul!(α::Number, t::ParametrisedTensorMap)
+    newtensors = map(t.tensors) do x
+        return α * x
+    end
+    t.tensors .= newtensors
+    return t
+end
+
+function LinearAlgebra.lmul!(α::Function, t::ParametrisedTensorMap)
+    newcoeffs = map(t.coeffs) do x
+        return α * x
+    end
+    t.coeffs .= newcoeffs
+    return t
+end
+
+function LinearAlgebra.rmul!(α::Number, t::ParametrisedTensorMap)
+    newtensors = map(t.tensors) do x
+        return x * α
+    end
+    t.tensors .= newtensors
+    return t
+end
+
+function LinearAlgebra.rmul!(t::ParametrisedTensorMap, α::Function)
+    newcoeffs = map(t.coeffs) do x
+        return x * α
+    end
+    t.coeffs .= newcoeffs
+    return t
+end
+
 # very poor definition, supposed to only give an indication!
 function LinearAlgebra.norm(t::ParametrisedTensorMap)
     @warn "Calculating a norm of a ParametrisedTensorMap is not well defined and may not be useful" maxlog=1

@@ -121,38 +121,6 @@ function Base.:*(t::ParametrisedTensorMap, α::Function)
     return ParametrisedTensorMap(deepcopy(t.tensors), newcoeffs)
 end
 
-function LinearAlgebra.lmul!(α::Number, t::ParametrisedTensorMap)
-    newtensors = map(t.tensors) do x
-        return α * x
-    end
-    t.tensors .= newtensors
-    return t
-end
-
-function LinearAlgebra.lmul!(α::Function, t::ParametrisedTensorMap)
-    newcoeffs = map(t.coeffs) do x
-        return α * x
-    end
-    t.coeffs .= newcoeffs
-    return t
-end
-
-function LinearAlgebra.rmul!(α::Number, t::ParametrisedTensorMap)
-    newtensors = map(t.tensors) do x
-        return x * α
-    end
-    t.tensors .= newtensors
-    return t
-end
-
-function LinearAlgebra.rmul!(t::ParametrisedTensorMap, α::Function)
-    newcoeffs = map(t.coeffs) do x
-        return x * α
-    end
-    t.coeffs .= newcoeffs
-    return t
-end
-
 function Base.:*(t1::AbstractTensorMap, t2::ParametrisedTensorMap)
     newtensors = map(t2.tensors) do x
         return t1 * x
