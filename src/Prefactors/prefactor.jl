@@ -23,6 +23,7 @@ Base.iterate(pf::Prefactor) = iterate(parent(pf))
 Base.iterate(pf::Prefactor, state) = iterate(parent(pf), state)
 Base.length(pf::Prefactor) = length(parent(pf))
 Base.convert(::Prefactor, x::Nunction) = Prefactor(x)
+Base.getindex(pf::Prefactor, i::Int) = pf.data[i]
 
 # Multiplication logic
 Base.:*(pf::Prefactor, x::Nunction) = Prefactor(vcat(pf.data, x))
