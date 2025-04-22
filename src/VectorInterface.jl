@@ -35,7 +35,7 @@ end
 
 function VI.scale!(t::ParametrisedTensorMap, α::Number)
     for i in eachindex(t)
-        t.coeffs[i] = t.coeffs[i] * α
+        t.tensors[i] = t.tensors[i] * α
     end
 end
 
@@ -52,8 +52,8 @@ function VI.scale!(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number)
     resize!(ty.coeffs, L_tx)
 
     for i in 1:L_tx
-        ty.tensors[i] = tx.tensors[i]
-        ty.coeffs[i] = α * tx.coeffs[i]
+        ty.tensors[i] = α * tx.tensors[i]
+        ty.coeffs[i] = tx.coeffs[i]
     end
     return ty
 end
@@ -66,16 +66,16 @@ end
 function VI.add(ty::ParametrisedTensorMap, tx::AbstractTensorMap, α::Number, β::Number)
     tz = copy(ty)
     scale!(tz, β)
-    push!(tz.tensors, tx)
-    push!(tz.coeffs, Prefactor(α))
+    push!(tz.tensors, scale(tx, α))
+    push!(tz.coeffs, Prefactor(one(scalartype(tx))))
     return tz
 end
 
 function VI.add(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number, β::Number)
     tz = copy(tx)
     scale!(tz, α)
-    push!(tz.tensors, ty)
-    push!(tz.coeffs, Prefactor(β))
+    push!(tz.tensors, scale(ty, β))
+    push!(tz.coeffs, Prefactor(one(scalartype(ty))))
     return tz
 end
 
@@ -83,8 +83,8 @@ function VI.add(ty::ParametrisedTensorMap, tx::ParametrisedTensorMap, α::Number
     tz = copy(ty)
     scale!(tz, β)
     for i in eachindex(tx)
-        push!(tz.tensors, tx.tensors[i])
-        push!(tz.coeffs, α * tx.coeffs[i])
+        push!(tz.tensors, α * tx.tensors[i])
+        push!(tz.coeffs, tx.coeffs[i])
     end
     return tz
 end
@@ -93,24 +93,24 @@ function VI.add!(ty::AbstractTensorMap, tx::ParametrisedTensorMap, α::Number, �
     @assert ty isa ParametrisedTensorMap "cannot in-place add a ParametrisedTensorMap to a non-ParametrisedTensorMap"
     scale!(ty, β)
     for i in eachindex(tx)
-        push!(ty.tensors, tx.tensors[i])
-        push!(ty.coeffs, α * tx.coeffs[i])
+        push!(ty.tensors, α * tx.tensors[i])
+        push!(ty.coeffs, tx.coeffs[i])
     end
     return ty
 end
 
 function VI.add!(ty::ParametrisedTensorMap, tx::AbstractTensorMap, α::Number, β::Number)
     scale!(ty, β)
-    push!(ty.tensors, tx)
-    push!(ty.coeffs, Prefactor(α))
+    push!(ty.tensors, α*tx)
+    push!(ty.coeffs, Prefactor(one(scalartype(tx))))
     return ty
 end
 
 function VI.add!(ty::ParametrisedTensorMap, tx::ParametrisedTensorMap, α::Number, β::Number)
     scale!(ty, β)
     for i in eachindex(tx)
-        push!(ty.tensors, tx.tensors[i])
-        push!(ty.coeffs, α * tx.coeffs[i])
+        push!(ty.tensors, α * tx.tensors[i])
+        push!(ty.coeffs, tx.coeffs[i])
     end
     return ty
 end
