@@ -1,4 +1,4 @@
-const Nunction = Union{Number, Function}
+const Nunction = Union{Number,Function}
 
 struct Prefactor
     data::Vector{Nunction}
@@ -32,7 +32,7 @@ Base.:*(pf1::Prefactor, pf2::Prefactor) = Prefactor(vcat(pf1.data, pf2.data))
 
 # Function evaluation logic
 function (pf::Prefactor)(t::Number)
-    result = 1.0 + 0.0im
+    result = 1.0 + 0.0im # Implicit assumption that the codomain of the functions is complex
     for x in pf
         if x isa Function
             result *= x(t)
@@ -44,3 +44,6 @@ function (pf::Prefactor)(t::Number)
     end
     return result
 end
+
+const constant = Returns(1.0 + 0.0im) # Implicit assumption that we are working with complex numbers
+const constantPF = Prefactor(constant)

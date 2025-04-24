@@ -15,6 +15,7 @@ import TensorKit as TK
 # Prefactor logic
 include("Prefactors/Prefactors.jl")
 using .Prefactors
+export Prefactor, Nunction, constant, constantPF
 
 include("parametrisedtensormap.jl")
 include("MPSKit.jl")
