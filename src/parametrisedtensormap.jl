@@ -10,7 +10,7 @@ end
 # Constructors
 # ------------
 function ParametrisedTensorMap(tensor::T, coeff::Prefactor) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
-    return ParametrisedTensorMap{E,S,N1,N2,T}(Vector{T}[tensor], Vector{Prefactor}[coeff])
+    return ParametrisedTensorMap{E,S,N1,N2,T}([tensor], [coeff])
 end
 function ParametrisedTensorMap(tensor::T, coeff::Nunction) where {E,S,N1,N2,T<:AbstractTensorMap{E,S,N1,N2}}
     return ParametrisedTensorMap{E,S,N1,N2,T}([tensor], [Prefactor(coeff)])
@@ -36,6 +36,9 @@ Base.length(t::ParametrisedTensorMap) = length(t.tensors)
 # Construct by multiplying coefficient function
 function Base.:*(f::Function, t::AbstractTensorMap)
     return ParametrisedTensorMap(t, f)
+end
+function Base.:*(pf::Prefactor, t::AbstractTensorMap)
+    return ParametrisedTensorMap(t, pf)
 end
 
 function Base.:*(t::AbstractTensorMap, f::Function)
@@ -211,3 +214,7 @@ function purge!(t::ParametrisedTensorMap)
 end
 
 purge!(t::AbstractTensorMap) = t
+
+istrivial(pf::Prefactor) = all(isa(x, Number) for x in pf.data)
+istrivial(t::ParametrisedTensorMap) = all(istrivial(c) for c in t.coeffs)
+istrivial(t::AbstractTensorMap) = true
