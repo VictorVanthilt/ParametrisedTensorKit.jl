@@ -78,4 +78,4 @@ function TK.:⊗(t1::ParametrisedTensorMap, t2::ParametrisedTensorMap)
     return sum(ptms)
 end
 
-# TK.storagetype(t::AbstractTensorMap) = Matrix{scalartype(t)}
+TK.removeunit(t::ParametrisedTensorMap, i::Int; kwargs...) = ParametrisedTensorMap(removeunit.(t.tensors, i; kwargs...), deepcopy(t.coeffs))
